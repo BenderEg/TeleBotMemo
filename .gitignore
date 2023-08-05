@@ -1,0 +1,8 @@
+# created by virtualenv automatically
+.venv
+.env
+commands.md
+instruction.txt
+memo_bank.ddl
+__pycache__
+new*
