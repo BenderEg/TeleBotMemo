@@ -23,10 +23,18 @@ for index in range(0, 6):
 builder.button(text="End training", callback_data="/cancel")
 builder.adjust(6,1)
 
+
 class Response(BaseFilter):
 
     async def __call__(self, callback: CallbackQuery) -> bool:
         return callback.data in ["0", "1", "2", "3", "4", "5"]
+
+
+class DigitResponse(BaseFilter):
+
+    async def __call__(self, callback: CallbackQuery) -> bool:
+      return callback.data.isdigit()
+
 
 class TextFilter(BaseFilter):
     async def __call__(self, message: Message) -> bool:
@@ -50,7 +58,8 @@ class FSMmodel(StatesGroup):
     # перечисляя возможные состояния, в которых будет находиться
     # бот в разные моменты взаимодейтсвия с пользователем
     training = State()        # Состояние тренировки
-    add = State() # Состояние изучения объектов
+    add = State() # Состояние добавления объектов
+    delete = State() # Состояние удаления объектов
 
 class Con:
 
@@ -83,4 +92,4 @@ class DbConnect:
     def __exit__(self, *args):
         self.db.con.commit()
         self.db.con.close()
-        return True
+        return False
