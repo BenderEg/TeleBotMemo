@@ -2,11 +2,11 @@ import asyncio
 from aiogram import Bot, Dispatcher
 from aiogram.filters import Command, CommandStart, StateFilter
 from aiogram.fsm.context import FSMContext
-from aiogram.fsm.state import default_state
 from aiogram.types import CallbackQuery, Message
 from congif import *
 from models import *
 from handlers import no_state_handler, training, add_object, learn, del_object, final_state
+from time_schedule import scheduler
 
 async def main() -> None:
 
@@ -23,6 +23,7 @@ async def main() -> None:
     dp.include_router(final_state.router)
 
     # Пропускаем накопившиеся апдейты и запускаем polling
+    scheduler.start()
     await bot.delete_webhook(drop_pending_updates=True)
     await dp.start_polling(bot)
 

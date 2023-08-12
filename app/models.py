@@ -8,11 +8,12 @@ import psycopg2
 from psycopg2.extras import RealDictCursor
 from time import sleep
 from dotenv import load_dotenv
+from dataclasses import dataclass
 
 load_dotenv()
 
 BOT_TOKEN = environ["token"]
-redis: Redis = Redis(host=environ["host"])
+redis: Redis = Redis(host=environ["host"], encoding="utf-8", decode_responses=True)
 storage: RedisStorage = RedisStorage(redis=redis)
 
 Limit = 10
@@ -93,3 +94,8 @@ class DbConnect:
         self.db.con.commit()
         self.db.con.close()
         return False
+
+@dataclass
+class Chat():
+
+    id: int

@@ -6,3 +6,4 @@ memo_bank.ddl
 __pycache__
 new*
 db.sql
+temp.py

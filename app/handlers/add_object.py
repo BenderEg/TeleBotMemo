@@ -1,7 +1,6 @@
 from aiogram import Router
 from aiogram.filters import Command, StateFilter
 from aiogram.types import Message
-from aiogram.fsm.state import default_state
 from lexicon import LEXICON_RU
 from models import *
 from congif import *
@@ -13,10 +12,6 @@ router: Router = Router()
 
 @router.message(Command(commands='add'))
 async def process_add_command(message: Message, state: FSMContext):
-    data = await get_data_cash(state)
-    if not data:
-        data = await get_data_db(message.chat.id, state)
-    await state.update_data(add_objects = [])
     await message.answer(
         text='Вы в режиме добавление объектов в базу. \n\
 Введите объект в формате: ключ = значение.\n\
@@ -31,13 +26,6 @@ async def process_exit_add_mode_command(message: Message, state: FSMContext):
     await state.set_state(state=None)
 
 
-@router.message(StateFilter(FSMmodel.add), Command(commands='add'))
-async def process_add_in_progress_command(message: Message):
-    await message.answer('Вы уже в режиме ввода.\n\
-Введите объект в формате: ключ = значение.\n\
-Для сохранения данных и выхода из режима ввода нажмите /cancel')
-
-
 @router.message(StateFilter(FSMmodel.add), Command(commands=('training', 'learn', 'delete')))
 async def proces_text_press(message: Message):
     await message.answer(
@@ -45,13 +33,20 @@ async def proces_text_press(message: Message):
         )
 
 
+@router.message(StateFilter(FSMmodel.add), Command(commands='add'))
+async def process_add_in_progress_command(message: Message):
+    await message.answer('Вы уже в режиме ввода.\n\
+Введите объект в формате: ключ = значение.\n\
+Для сохранения данных и выхода из режима ввода нажмите /cancel')
+
+
 @router.message(StateFilter(FSMmodel.add), TextFilter())
 async def process_new_entity_command(message: Message, state: FSMContext):
     value = await parse_add_value(message)
     if value:
-        data = await state.get_data()
+        data: dict = await get_data(state, message.chat.id)
+        add_objects: list = data.get('add_objects', [])
         objects: list = data.get('objects', [])
-        add_objects: list = data.get('add_objects')
         if any(map(lambda x: True if x.get('object') == value['object'] else False, (objects))):
             await message.answer('Объект уже есть в базе.')
         else:

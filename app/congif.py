@@ -1,6 +1,7 @@
 from aiogram.types import CallbackQuery, Message
 from aiogram.fsm.context import FSMContext
-from models import DbConnect
+from models import DbConnect, redis, Chat
+from json import loads
 
 
 def _calc_e_factor(prev: int, g: int) -> float:
@@ -78,11 +79,9 @@ async def del_values_db(state: FSMContext, chat: str) -> None:
 
     res = await state.get_data()
     with DbConnect() as db:
-        for ele in res["deleted_objects"]:
-            db.cur.execute('DELETE FROM bank WHERE user_id = %s AND object = %s', (chat, ele))
-        # добавить обновление objects
-        # await state.update_data(deleted_objects = [], filtered_objects = [])
-        # await state.set_state(state=None)
+        if res.get('deleted_objects', None) and res["deleted_objects"]:
+            for ele in res["deleted_objects"]:
+                db.cur.execute('DELETE FROM bank WHERE user_id = %s AND object = %s', (chat, ele))
     await state.clear()
 
 async def parse_add_value(message: Message) -> None:
@@ -104,15 +103,9 @@ async def parse_add_value(message: Message) -> None:
 async def add_values_db(state: FSMContext, chat: str) -> None:
     res = await state.get_data()
     with DbConnect() as db:
-        if len(res["add_objects"]) > 0:
+        if res.get('add_objects', None) and len(res["add_objects"]) > 0:
             db.cur.executemany('INSERT INTO bank (user_id, object, meaning) \
 VALUES (%s, %s, %s) ON CONFLICT (user_id, object) DO NOTHING', ((chat, ele['object'], ele['meaning']) for ele in res["add_objects"]))
-            '''db.cur.execute('SELECT object, meaning, e_factor, interval, n, (next_date - now()::DATE) as diff \
-FROM bank WHERE user_id = %s ORDER BY object', (chat,)
-           )
-            data = db.cur.fetchall()
-            if data and len(data) > 0:
-                await state.update_data(objects = data, add_objects = [])'''
     await state.clear()
 
 
@@ -124,14 +117,36 @@ async def get_data_db(chat: int, state: FSMContext) -> list:
 FROM bank WHERE user_id = %s ORDER BY object', (chat,)
             )
         data = db.cur.fetchall()
-        # print(f'data from DB {data}')
         if data and len(data) > 0:
             await state.update_data(objects = data)
             return data
 
 
-async def get_data_cash(state: FSMContext) -> list:
+async def get_data(state: FSMContext, chat: int):
 
-    data = await state.get_data()
-    if data.get('objects', False) and len(data['objects']) > 0:
-        return data['objects']
+    data: dict = await state.get_data()
+    if not data:
+        objects: list = await get_data_db(chat, state)
+        await state.update_data(deleted_objects = [], objects = objects, add_objects = [])
+        data: dict = await state.get_data()
+    return data
+
+
+async def update_values_db_auto(chat: Chat) -> None:
+    res: str = await redis.get(f'fsm:{chat.id}:{chat.id}:data')
+    if res:
+        res: dict = loads(res)
+        print(res)
+        with DbConnect() as db:
+            if res.get('add_objects', False) and len(res["add_objects"]) > 0:
+                db.cur.executemany('INSERT INTO bank (user_id, object, meaning) \
+VALUES (%s, %s, %s) ON CONFLICT (user_id, object) DO NOTHING', ((chat.id, ele['object'], ele['meaning']) for ele in res["add_objects"]))
+            if res.get('deleted_objects', False):
+                for ele in res["deleted_objects"]:
+                    db.cur.execute('DELETE FROM bank WHERE user_id = %s AND object = %s', (chat.id, ele))
+
+
+async def check_status_auto(chat: Chat) -> bool:
+    status: str = await redis.get(f'fsm:{chat.id}:{chat.id}:state')
+    print(status)
+    return status == 'FSMmodel:training'

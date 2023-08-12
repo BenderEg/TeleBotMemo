@@ -15,14 +15,8 @@ router: Router = Router()
 @router.message(Command(commands='training'), StateFilter(default_state))
 async def process_training_command(message: Message, state: FSMContext):
 
-    data = await get_data_cash(state)
-    if not data:
-        data = await get_data_db(message.chat.id, state)
-        if not data:
-            await message.answer(
-        text='На сегодня нет объектов для тренировки, ты можешь попробовать повторить \
-новые объекты или объекты, которые пока плохо запомнились:')
-    training_data = list(filter(lambda x: x['diff'] <= 0, data))
+    data: dict = await get_data(state, message.chat.id)
+    training_data = list(filter(lambda x: x['diff'] <= 0, data['objects']))
     if training_data:
         shuffle(training_data)
         cur = 0
@@ -40,7 +34,7 @@ async def process_training_command(message: Message, state: FSMContext):
 
 @router.callback_query(StateFilter(FSMmodel.training), Response())
 async def process_buttons_press(callback: CallbackQuery, state: FSMContext):
-    data = await state.get_data()
+    data: dict = await get_data(state, callback.from_user.id)
     training_data = data['training_data']
     cur = int(data['cur'])
     training_data[cur]['grade'] = callback.data
@@ -60,6 +54,15 @@ async def process_buttons_press(callback: CallbackQuery, state: FSMContext):
 async def process_end_training_press(callback: CallbackQuery, state: FSMContext):
     await update_db(state, callback.message.chat.id)
     await callback.message.edit_text(
+        text=LEXICON_RU['/end_training']
+    )
+    await state.set_state(state=None)
+
+
+@router.message(StateFilter(FSMmodel.training), Command(commands=('cancel')))
+async def proces_text_press(message: Message, state: FSMContext):
+    await update_db(state, message.chat.id)
+    await message.answer(
         text=LEXICON_RU['/end_training']
     )
     await state.set_state(state=None)
