@@ -38,16 +38,25 @@ async def process_add_in_progress_command(message: Message):
 Для сохранения данных и выхода из режима ввода нажмите /cancel')
 
 
+@router.message(StateFilter(FSMmodel.add), Command(commands=('training', 'learn', 'delete')))
+async def proces_text_press(message: Message):
+    await message.answer(
+            text='Сначала выйдите из режима добавление объектов выберав команду /cancel)'
+        )
+
+
 @router.message(StateFilter(FSMmodel.add), TextFilter())
 async def process_new_entity_command(message: Message, state: FSMContext):
     value = await parse_add_value(message)
     if value:
         data = await state.get_data()
-        objects: list = data['objects']
-        add_objects: list = data['add_objects']
+        objects: list = data.get('objects', [])
+        add_objects: list = data.get('add_objects')
         if any(map(lambda x: True if x.get('object') == value['object'] else False, (objects))):
             await message.answer('Объект уже есть в базе.')
         else:
+            print('я в режиме принятия объектов')
+            print(value)
             objects.append(value)
             add_objects.append(value)
             await state.update_data(add_objects=add_objects, objects=objects)

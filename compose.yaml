@@ -1,0 +1,53 @@
+services:
+    db_memo:
+        container_name: db_memo
+        image: bendereg/postgres_memo
+        env_file:
+           - .env
+        volumes:
+            - 'memo_db:/var/lib/postgresql/data'
+        networks:
+            - 'memo_app'
+        healthcheck:
+            test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+            interval: 5s
+            timeout: 5s
+            retries: 5
+
+    red:
+        container_name: red
+        image: redis
+        ports:
+            - 6379
+        volumes:
+            - 'memo_red:/data'
+        networks:
+            - 'memo_app'
+        healthcheck:
+            test: ["CMD-SHELL", "redis-cli ping | grep PONG"]
+            interval: 1s
+            timeout: 3s
+            retries: 5
+
+    memo_main:
+        container_name: memo_main
+        image: bendereg/memo_main
+        depends_on:
+            - db_memo
+            - red
+        env_file:
+            - .env
+        networks:
+            - 'memo_app'
+        restart: always
+
+
+volumes:
+    memo_db:
+        name: memo_db
+    memo_red:
+        name: memo_red
+
+networks:
+    memo_app:
+        name: memo_app

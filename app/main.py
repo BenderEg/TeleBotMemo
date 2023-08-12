@@ -6,7 +6,7 @@ from aiogram.fsm.state import default_state
 from aiogram.types import CallbackQuery, Message
 from congif import *
 from models import *
-from handlers import no_state_handler, training, add_object, learn, del_object
+from handlers import no_state_handler, training, add_object, learn, del_object, final_state
 
 async def main() -> None:
 
@@ -20,6 +20,7 @@ async def main() -> None:
     dp.include_router(training.router)
     dp.include_router(add_object.router)
     dp.include_router(del_object.router)
+    dp.include_router(final_state.router)
 
     # Пропускаем накопившиеся апдейты и запускаем polling
     await bot.delete_webhook(drop_pending_updates=True)

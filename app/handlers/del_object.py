@@ -42,6 +42,13 @@ async def process_del_in_progress_command(message: Message, state: FSMContext):
 Для выхода из режима ввода нажмите /cancel')
 
 
+@router.message(StateFilter(FSMmodel.delete), Command(commands=('training', 'learn', 'add')))
+async def proces_text_press(message: Message):
+    await message.answer(
+            text='Сначала выйдите из режима удаления объектов выберав команду /cancel)'
+        )
+
+
 @router.message(StateFilter(FSMmodel.delete), TextFilter())
 async def process_del_command(message: Message, state: FSMContext):
     data = await get_data_cash(state)
@@ -69,7 +76,7 @@ async def process_buttons_press(callback: CallbackQuery, state: FSMContext):
         deleted_objects.append(cur['object'])
         objects = list(filter(lambda x: x['object'] != cur['object'], data['objects']))
         await state.update_data(deleted_objects=deleted_objects, objects=objects)
-        await callback.message.edit_text(text=f'Объект: {cur["object"]} = {cur["meaning"]}.\n\
-помечен на удаление. Для сохранения изменений и выхода из режема удаления нажмите /cancel или введите наименование следующего объекта для удаления.')
+        await callback.message.edit_text(text=f'Выбран объект: {cur["object"]} = {cur["meaning"]}.\n\
+помечен на удаление. Для сохранения изменений и выхода из режима удаления нажмите /cancel или введите наименование следующего объекта для удаления.')
     else:
         await callback.answer(text='Произошла ошибка. Для перезагрузки нажмите /cancel')

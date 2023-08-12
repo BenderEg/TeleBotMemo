@@ -1,7 +1,6 @@
 FROM python:3.11
-WORKDIR /app
 COPY requirements.txt requirements.txt
 RUN pip install --no-cache-dir --upgrade -r requirements.txt
-COPY app/main.py main.py
+COPY ./app ./app
 VOLUME [ "/app" ]
-ENTRYPOINT ["python3", "main.py"]
+ENTRYPOINT ["python3", "app/main.py"]
