@@ -22,6 +22,9 @@ async def main() -> None:
     dp.include_router(del_object.router)
     dp.include_router(final_state.router)
 
+    # создаем меню
+    await set_main_menu(bot)
+
     # Пропускаем накопившиеся апдейты и запускаем polling
     scheduler.start()
     await bot.delete_webhook(drop_pending_updates=True)

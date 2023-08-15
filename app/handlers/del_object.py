@@ -12,7 +12,7 @@ from aiogram.methods import DeleteMessage
 router: Router = Router()
 
 
-@router.message(Command(commands='delete'))
+@router.message(StateFilter(default_state), Command(commands='delete'))
 async def process_del_enter_command(message: Message, state: FSMContext):
     data: dict = await get_data(state, message.chat.id)
     if not data.get('objects', False) or len(data['objects']) == 0:

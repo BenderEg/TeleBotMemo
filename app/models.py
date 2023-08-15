@@ -99,3 +99,8 @@ class DbConnect:
 class Chat():
 
     id: int
+
+
+class CsvReadExeption(Exception):
+
+    pass

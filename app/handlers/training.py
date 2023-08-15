@@ -36,17 +36,25 @@ async def process_training_command(message: Message, state: FSMContext):
 async def process_buttons_press(callback: CallbackQuery, state: FSMContext):
     data: dict = await get_data(state, callback.from_user.id)
     training_data = data['training_data']
-    cur = int(data['cur'])
-    training_data[cur]['grade'] = callback.data
-    cur += 1
-    if cur < len(training_data):
-        await state.update_data(training_data=training_data, cur = cur)
-        await callback.message.edit_text(text=f'{training_data[cur]["object"]}\n -------------------\n<tg-spoiler>{training_data[cur]["meaning"]}</tg-spoiler>', \
+    if training_data:
+        try:
+            cur = int(data['cur'])
+            training_data[cur]['grade'] = callback.data
+            cur += 1
+            if cur < len(training_data):
+                await state.update_data(training_data=training_data, cur = cur)
+                await callback.message.edit_text(text=f'{training_data[cur]["object"]}\n -------------------\n<tg-spoiler>{training_data[cur]["meaning"]}</tg-spoiler>', \
                                          reply_markup=callback.message.reply_markup, parse_mode='html')
+            else:
+                await state.update_data(training_data=training_data)
+                await update_db(state, callback.message.chat.id)
+                await callback.message.edit_text(text='Тренировка завершена. Данные обновлены.')
+                await state.set_state(state=None)
+        except:
+            await callback.message.edit_text(text='Тренировка была атоматически завершена. Для продолжения нажмите /training')
+            await state.set_state(state=None)
     else:
-        await state.update_data(training_data=training_data)
-        await update_db(state, callback.message.chat.id)
-        await callback.message.edit_text(text='Тренировка завершена. Данные обновлены.')
+        await callback.message.edit_text(text='Тренировка была атоматически завершена. Для продолжения нажмите /training')
         await state.set_state(state=None)
 
 

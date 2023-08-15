@@ -5,12 +5,13 @@ from lexicon import LEXICON_RU
 from models import *
 from congif import *
 from aiogram.fsm.context import FSMContext
+from aiogram.fsm.state import default_state
 
 
 router: Router = Router()
 
 
-@router.message(Command(commands='add'))
+@router.message(StateFilter(default_state), Command(commands='add'))
 async def process_add_command(message: Message, state: FSMContext):
     await message.answer(
         text='Вы в режиме добавление объектов в базу. \n\
@@ -38,6 +39,18 @@ async def process_add_in_progress_command(message: Message):
     await message.answer('Вы уже в режиме ввода.\n\
 Введите объект в формате: ключ = значение.\n\
 Для сохранения данных и выхода из режима ввода нажмите /cancel')
+
+
+@router.message(StateFilter(FSMmodel.add), FileFilter())
+async def add_from_file(message: Message, state: FSMContext, name: str):
+    data: list = await read_data_csv(name)
+    await write_to_db_from_csv(message.chat.id, data)
+    res: str = await list_added_objects(data)
+    if res:
+        await message.answer(f'Объекты добавлены в базу:\n{res}', parse_mode='html')
+        await state.set_state(state=None)
+    else:
+        await message.answer(f'Произошла ошибка, проверьте, что файл с объектами заполнен корректно.')
 
 
 @router.message(StateFilter(FSMmodel.add), TextFilter())

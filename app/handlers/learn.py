@@ -9,8 +9,8 @@ from aiogram.fsm.context import FSMContext
 
 router: Router = Router()
 
-
-@router.message(Command(commands='learn'), StateFilter(default_state, FSMmodel.delete))
+FSMmodel.delete
+@router.message(Command(commands='learn'), StateFilter(default_state))
 async def process_training_command(message: Message, state: FSMContext):
 
     data: dict = await get_data(state, message.chat.id)
@@ -30,4 +30,4 @@ async def process_list_all_command(message: Message, state: FSMContext):
     if not data.get('objects', False):
         await message.answer('В базе отсутсвуют объекты. Для добавления выберите команду /add')
     res = list_all_data(data['objects'])
-    await message.answer(res)
+    await message.answer(res, parse_mode='html')

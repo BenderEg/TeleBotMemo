@@ -19,5 +19,6 @@ async def process_text_no_stat(message: Message):
 @router.message()
 async def process_any(message: Message):
     await message.answer(
-            text='Я так не играю :(. Для вызова помошника нажмите /help'
+            text='Я так не играю :(. Для вызова помошника нажмите /help.\n\
+Для добавление объектов с использованием файла сначала перейдите в режим /add.'
                 )

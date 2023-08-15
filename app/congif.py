@@ -1,7 +1,31 @@
-from aiogram.types import CallbackQuery, Message
+from aiogram.types import CallbackQuery, Message, BotCommand
 from aiogram.fsm.context import FSMContext
 from models import DbConnect, redis, Chat
 from json import loads
+from aiogram import Bot
+from csv import reader
+from models import CsvReadExeption
+
+async def set_main_menu(bot: Bot):
+
+    # Создаем список с командами и их описанием для кнопки menu
+    main_menu_commands = [
+        BotCommand(command='/help',
+                   description='Справка по работе бота'),
+        BotCommand(command='/add',
+                   description='Добавление объектов'),
+        BotCommand(command='/delete',
+                   description='Удаление объектов'),
+        BotCommand(command='/training',
+                   description='Режим тренировки'),
+        BotCommand(command='/learn',
+                   description='Режим изучения'),
+        BotCommand(command='/list_all',
+                   description='Вывод всех объектов'),
+        BotCommand(command='/cancel',
+                   description='Для выхода из режима'),
+            ]
+    await bot.set_my_commands(main_menu_commands)
 
 
 def _calc_e_factor(prev: int, g: int) -> float:
@@ -20,8 +44,8 @@ def _calc_interval(n: int, prev_interval: int, e_factor: float) -> int:
 def list_all_data(lst: list) -> str:
 
     lst = sorted(lst, key=lambda x: x['object'])
-    return '\n'.join(f"{i}. {ele['object']} = {ele['meaning']}." \
-                     if i == len(lst) else f"{i}. {ele['object']} = {ele['meaning']};" \
+    return '\n'.join(f"{i}. <b>{ele['object']}</b> = {ele['meaning']}." \
+                     if i == len(lst) else f"{i}. <b>{ele['object']}</b> = {ele['meaning']};" \
                         for i, ele in enumerate(lst, 1))
 
 
@@ -52,28 +76,30 @@ async def update_db(state: FSMContext, chat: str) -> None:
 
     res = await state.get_data()
     with DbConnect() as db:
-        for ele in res['training_data']:
-            grade = int(ele.get('grade', -1))
-            e_factor = float(ele['e_factor'])
-            n = ele['n']
-            interval = int(ele['interval'])
-            if 0 <= grade < 3:
-                db.cur.execute('UPDATE bank SET next_date = now()::DATE + 1, \
+        if res.get('training_data', False) and len(res["training_data"]) > 0:
+            for ele in res['training_data']:
+                grade = int(ele.get('grade', -1))
+                e_factor = float(ele['e_factor'])
+                n = ele['n']
+                interval = int(ele['interval'])
+                if 0 <= grade < 3:
+                    db.cur.execute('UPDATE bank SET next_date = now()::DATE + 1, \
 interval = DEFAULT, n = DEFAULT, modified = DEFAULT \
 WHERE user_id = %s AND object = %s', (chat, ele["object"])
-                )
-            elif grade >= 3:
-                e_factor = _calc_e_factor(e_factor, grade)
-                interval = _calc_interval(n, interval, e_factor)
-                db.cur.execute('UPDATE bank SET n = %s, e_factor = %s, next_date = now()::DATE + %s, \
+                    )
+                elif grade >= 3:
+                    e_factor = _calc_e_factor(e_factor, grade)
+                    interval = _calc_interval(n, interval, e_factor)
+                    db.cur.execute('UPDATE bank SET n = %s, e_factor = %s, next_date = now()::DATE + %s, \
 interval = %s, modified = DEFAULT WHERE user_id = %s AND object = %s', (n+1, e_factor, interval, interval, chat, ele["object"])
-                )
+                    )
         db.cur.execute('SELECT object, meaning, e_factor, interval, n, (next_date - now()::DATE) as diff \
 FROM bank WHERE user_id = %s ORDER BY object', (chat,)
             )
         data = db.cur.fetchall()
         if data and len(data) > 0:
             await state.update_data(objects = data)
+
 
 async def del_values_db(state: FSMContext, chat: str) -> None:
 
@@ -127,7 +153,7 @@ async def get_data(state: FSMContext, chat: int):
     data: dict = await state.get_data()
     if not data:
         objects: list = await get_data_db(chat, state)
-        await state.update_data(deleted_objects = [], objects = objects, add_objects = [])
+        await state.update_data(deleted_objects = [], objects = objects, add_objects = [], training_data = [])
         data: dict = await state.get_data()
     return data
 
@@ -136,7 +162,6 @@ async def update_values_db_auto(chat: Chat) -> None:
     res: str = await redis.get(f'fsm:{chat.id}:{chat.id}:data')
     if res:
         res: dict = loads(res)
-        print(res)
         with DbConnect() as db:
             if res.get('add_objects', False) and len(res["add_objects"]) > 0:
                 db.cur.executemany('INSERT INTO bank (user_id, object, meaning) \
@@ -144,9 +169,61 @@ VALUES (%s, %s, %s) ON CONFLICT (user_id, object) DO NOTHING', ((chat.id, ele['o
             if res.get('deleted_objects', False):
                 for ele in res["deleted_objects"]:
                     db.cur.execute('DELETE FROM bank WHERE user_id = %s AND object = %s', (chat.id, ele))
+            if res.get('training_data', False) and len(res["training_data"]) > 0:
+                for ele in res['training_data']:
+                    grade = int(ele.get('grade', -1))
+                    e_factor = float(ele['e_factor'])
+                    n = ele['n']
+                    interval = int(ele['interval'])
+                    if 0 <= grade < 3:
+                        db.cur.execute('UPDATE bank SET next_date = now()::DATE + 1, \
+interval = DEFAULT, n = DEFAULT, modified = DEFAULT \
+WHERE user_id = %s AND object = %s', (chat.id, ele["object"])
+                )
+                    elif grade >= 3:
+                        e_factor = _calc_e_factor(e_factor, grade)
+                        interval = _calc_interval(n, interval, e_factor)
+                        db.cur.execute('UPDATE bank SET n = %s, e_factor = %s, next_date = now()::DATE + %s, \
+interval = %s, modified = DEFAULT WHERE user_id = %s AND object = %s', (n+1, e_factor, interval, interval, chat.id, ele["object"])
+                )
 
 
 async def check_status_auto(chat: Chat) -> bool:
     status: str = await redis.get(f'fsm:{chat.id}:{chat.id}:state')
     print(status)
     return status == 'FSMmodel:training'
+
+
+def _strip_value(value: str):
+
+    return value.strip('\n .,;:!').lower()
+
+
+async def read_data_csv(file_name: str) -> list:
+
+    with open(file_name, newline='') as f:
+        try:
+            data = reader(f, delimiter='=')
+            cur = filter(lambda x: len(x) == 2, data)
+            res = list(map(lambda x: [_strip_value(ele) for ele in x], cur))
+            return res
+        except:
+            raise CsvReadExeption()
+
+
+async def write_to_db_from_csv(chat: str, data: list) -> None:
+
+    with DbConnect() as db:
+
+        if data:
+            db.cur.executemany('INSERT INTO bank (user_id, object, meaning) \
+VALUES (%s, %s, %s) ON CONFLICT (user_id, object) DO NOTHING', ((chat, *ele) for ele in data))
+
+
+async def list_added_objects(lst: list) -> str:
+
+    if lst:
+        lst = sorted(lst)
+        return '\n'.join(f"{i}. <b>{ele[0]}</b> = {ele[1]}." \
+                     if i == len(lst) else f"{i}. <b>{ele[0]}</b> = {ele[1]};" \
+                        for i, ele in enumerate(lst, 1))
