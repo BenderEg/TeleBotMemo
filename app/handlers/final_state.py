@@ -1,7 +1,6 @@
 from aiogram import Router
-from aiogram.filters import Command, CommandStart, StateFilter
 from aiogram.types import Message
-from aiogram.fsm.state import default_state
+
 from lexicon import LEXICON_RU
 from models import TextFilter
 
@@ -20,5 +19,5 @@ async def process_text_no_stat(message: Message):
 async def process_any(message: Message):
     await message.answer(
             text='Я так не играю :(. Для вызова помошника нажмите /help.\n\
-Для добавление объектов с использованием файла сначала перейдите в режим /add.'
-                )
+Для добавление объектов с использованием файла \
+сначала перейдите в режим /add.')

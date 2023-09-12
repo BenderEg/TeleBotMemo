@@ -1,10 +1,10 @@
 from aiogram import Router
 from aiogram.filters import Command, CommandStart, StateFilter
-from aiogram.types import Message
 from aiogram.fsm.state import default_state
+from aiogram.types import Message
+
 from lexicon import LEXICON_RU
 from models import DbConnect
-
 
 router: Router = Router()
 

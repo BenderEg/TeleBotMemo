@@ -1,5 +1,5 @@
-# created by virtualenv automatically
 .venv
+.vscode
 .env
 commands.md
 instruction.txt
@@ -9,3 +9,6 @@ new*
 db.sql
 temp.py
 test.*
+poety*
+pypro*
+.gitignore

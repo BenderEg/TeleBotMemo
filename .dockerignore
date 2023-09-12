@@ -9,3 +9,6 @@ db.sql
 temp.py
 .git
 test.csv
+db
+compose.yaml
+test.csv

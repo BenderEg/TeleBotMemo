@@ -1,12 +1,14 @@
+from os import path
+
 from aiogram import Router
 from aiogram.filters import Command, StateFilter
-from aiogram.types import Message
-from lexicon import LEXICON_RU
-from models import *
-from congif import *
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import default_state
+from aiogram.types import Message
 
+from congif import add_values_db, read_data_csv, \
+    write_to_db_from_csv, list_added_objects, parse_add_value, get_data
+from models import FSMmodel, FileFilter, FileHandler, TextFilter
 
 router: Router = Router()
 
@@ -27,10 +29,12 @@ async def process_exit_add_mode_command(message: Message, state: FSMContext):
     await state.set_state(state=None)
 
 
-@router.message(StateFilter(FSMmodel.add), Command(commands=('training', 'learn', 'delete')))
+@router.message(StateFilter(FSMmodel.add), Command(commands=(
+        'training', 'learn', 'delete')))
 async def proces_text_press(message: Message):
     await message.answer(
-            text='Сначала выйдите из режима добавление объектов выберав команду /cancel)'
+            text='Сначала выйдите из режима \
+добавление объектов выберав команду /cancel)'
         )
 
 
@@ -43,14 +47,19 @@ async def process_add_in_progress_command(message: Message):
 
 @router.message(StateFilter(FSMmodel.add), FileFilter())
 async def add_from_file(message: Message, state: FSMContext, name: str):
-    data: list = await read_data_csv(name)
-    await write_to_db_from_csv(message.chat.id, data)
-    res: str = await list_added_objects(data)
-    if res:
-        await message.answer(f'Объекты добавлены в базу:\n{res}', parse_mode='html')
-        await state.set_state(state=None)
-    else:
-        await message.answer(f'Произошла ошибка, проверьте, что файл с объектами заполнен корректно.')
+    with FileHandler(message.chat.id, name) as dest:
+        file = message.document
+        await file.bot.download(file=file, destination=path.join(dest, name))
+        data: list = await read_data_csv(path.join(dest, name))
+        await write_to_db_from_csv(message.chat.id, data)
+        res: str = await list_added_objects(data)
+        if res:
+            await message.answer(
+                f'Объекты добавлены в базу:\n{res}', parse_mode='html')
+            await state.clear()
+        else:
+            await message.answer('Произошла ошибка, проверьте, \
+что файл с объектами заполнен корректно.')
 
 
 @router.message(StateFilter(FSMmodel.add), TextFilter())
@@ -60,7 +69,9 @@ async def process_new_entity_command(message: Message, state: FSMContext):
         data: dict = await get_data(state, message.chat.id)
         add_objects: list = data.get('add_objects', [])
         objects: list = data.get('objects', [])
-        if any(map(lambda x: True if x.get('object') == value['object'] else False, (objects))):
+        if any(map(
+            lambda x: True if x.get('object') == value['object'] else False,
+                (objects))):
             await message.answer('Объект уже есть в базе.')
         else:
             print('я в режиме принятия объектов')

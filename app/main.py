@@ -1,12 +1,12 @@
 import asyncio
 from aiogram import Bot, Dispatcher
-from aiogram.filters import Command, CommandStart, StateFilter
-from aiogram.fsm.context import FSMContext
-from aiogram.types import CallbackQuery, Message
-from congif import *
-from models import *
-from handlers import no_state_handler, training, add_object, learn, del_object, final_state
+
+from congif import set_main_menu
+from handlers import no_state_handler, training, add_object, \
+    learn, del_object, final_state
+from models import BOT_TOKEN, storage
 from time_schedule import scheduler
+
 
 async def main() -> None:
 
