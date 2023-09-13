@@ -9,6 +9,6 @@ new*
 db.sql
 temp.py
 test.*
-poety*
-pypro*
+poetry*
+pyproject.toml
 .gitignore
