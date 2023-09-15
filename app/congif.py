@@ -44,7 +44,7 @@ def _calc_interval(n: int, prev_interval: int, e_factor: float) -> int:
         return round(prev_interval*e_factor)
 
 
-def list_all_data(lst: list) -> str:
+async def list_all_data(lst: list) -> str:
 
     lst = sorted(lst, key=lambda x: x['object'])
     return '\n'.join(f"{i}. <b>{ele['object']}</b> = {ele['meaning']}."
@@ -254,5 +254,5 @@ async def list_added_objects(lst: list) -> str:
     if lst:
         lst = sorted(lst)
         return '\n'.join(f"{i}. <b>{ele[0]}</b> = {ele[1]}."
-            if i == len(lst) else f"{i}. <b>{ele[0]}</b> = {ele[1]};"
-            for i, ele in enumerate(lst, 1))
+                         if i == len(lst) else f"{i}. <b>{ele[0]}</b> = \
+                            {ele[1]};" for i, ele in enumerate(lst, 1))
