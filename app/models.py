@@ -68,6 +68,7 @@ class FSMmodel(StatesGroup):
     training = State()        # Состояние тренировки
     add = State()  # Состояние добавления объектов
     delete = State()  # Состояние удаления объектов
+    add_category = State()
 
 
 class Con:

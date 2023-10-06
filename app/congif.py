@@ -23,6 +23,8 @@ async def set_main_menu(bot: Bot):
                    description='Режим тренировки'),
         BotCommand(command='/learn',
                    description='Режим изучения'),
+        BotCommand(command='/add_category',
+                   description='Добавление категории для хранения объектов'),
         BotCommand(command='/help',
                    description='Справка по работе бота'),
         BotCommand(command='/cancel',
@@ -256,3 +258,11 @@ async def list_added_objects(lst: list) -> str:
         return '\n'.join(f"{i}. <b>{ele[0]}</b> = {ele[1]}."
                          if i == len(lst) else f"{i}. <b>{ele[0]}</b> = \
                             {ele[1]};" for i, ele in enumerate(lst, 1))
+
+
+async def add_category_db(message: Message, state: FSMContext) -> None:
+    with DbConnect() as db:
+        db.cur.execute('INSERT INTO categories (user_id, name) \
+VALUES (%s, %s) ON CONFLICT (user_id, name) DO NOTHING', (message.chat.id,
+                                                          message.text))
+    await state.clear()
