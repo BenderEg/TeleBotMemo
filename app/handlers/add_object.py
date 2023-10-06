@@ -15,11 +15,20 @@ router: Router = Router()
 
 @router.message(StateFilter(default_state), Command(commands='add'))
 async def process_add_command(message: Message, state: FSMContext):
-    await message.answer(
-        text='Вы в режиме добавление объектов в базу. \n\
+    data: dict = await get_data(state, message.chat.id)
+    category = data.get('category', False)
+    if category:
+        await message.answer(
+            text=f'Вы в режиме добавление объектов в базу. \n\
+Текущая категория <b>"{category}"</b>.\n\
+Для смены категории выберите /choose_categoty.\n\
 Введите объект в формате: ключ = значение.\n\
-Для выхода из режима ввода и сохранения данных нажмите /cancel')
-    await state.set_state(FSMmodel.add)
+Для выхода из режима ввода и сохранения данных нажмите /cancel',
+            parse_mode='html')
+        await state.set_state(FSMmodel.add)
+    else:
+        await message.answer(text='Категория не выбрана.\n\
+Для продолжения работы выберите /choose_category или /add_category')
 
 
 @router.message(StateFilter(FSMmodel.add), Command(commands='cancel'))
@@ -74,8 +83,6 @@ async def process_new_entity_command(message: Message, state: FSMContext):
                 (objects))):
             await message.answer('Объект уже есть в базе.')
         else:
-            print('я в режиме принятия объектов')
-            print(value)
             objects.append(value)
             add_objects.append(value)
             await state.update_data(add_objects=add_objects, objects=objects)

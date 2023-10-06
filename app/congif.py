@@ -151,10 +151,15 @@ async def add_values_db(state: FSMContext, chat: str) -> None:
     res = await state.get_data()
     with DbConnect() as db:
         if res.get('add_objects', None) and len(res["add_objects"]) > 0:
-            db.cur.executemany('INSERT INTO bank (user_id, object, meaning) \
-VALUES (%s, %s, %s) ON CONFLICT (user_id, object) DO NOTHING', (
+            db.cur.executemany('INSERT INTO bank \
+                               (user_id, object, meaning, category) \
+                               VALUES (%s, %s, %s, %s) \
+                               ON CONFLICT (user_id, object) \
+                               DO NOTHING', (
                 (chat, ele['object'],
-                 ele['meaning']) for ele in res["add_objects"]))
+                 ele['meaning'],
+                 res.get('category')) for ele in res["add_objects"])
+                )
     await state.clear()
 
 

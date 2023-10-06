@@ -50,4 +50,4 @@ async def process_new_category_command(message: Message, state: FSMContext):
     await message.answer(f'Категория доступна в меню.\n\
 Для выбора категории нажмите /choose_сategory.\n\
 Вы вышли из режима создания категории.\n\
-Текущая категория  <b>"{message.text}"</b>.', parse_mode='html')
+Текущая категория <b>"{message.text}"</b>.', parse_mode='html')

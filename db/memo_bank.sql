@@ -4,7 +4,9 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 CREATE TABLE IF NOT EXISTS memo.users (
     id int PRIMARY KEY,
-    creation_date DATE NOT NULL DEFAULT CURRENT_DATE
+    name TEXT NOT NULL,
+    creation_date timestamp with time zone DEFAULT now(),
+    modified timestamp with time zone DEFAULT now()
 );
 
 CREATE TABLE IF NOT EXISTS memo.bank (
@@ -30,7 +32,7 @@ CREATE TABLE IF NOT EXISTS memo.categories (
     id uuid DEFAULT uuid_generate_v4(),
     user_id int NOT NULL,
     name TEXT NOT NULL,
-    creation_date DATE NOT NULL DEFAULT now(),
+    creation_date timestamp with time zone DEFAULT now(),
     PRIMARY KEY (id),
     CONSTRAINT fk_user_id
 	FOREIGN KEY (user_id)

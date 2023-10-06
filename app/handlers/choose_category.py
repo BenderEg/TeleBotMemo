@@ -62,7 +62,7 @@ async def process_buttons_press(callback: CallbackQuery, state: FSMContext):
     await state.update_data(category=category)
     await callback.message.edit_text(
         text=f'Вы выбрали категорию <b>"{category}"</b>.\n\
-Для дальейшей работы выберите комаду /add, /training или /learn.',
+Для дальнейшей работы выберите комаду /add, /training или /learn.',
         parse_mode='html')
     await update_db(state, callback.from_user.id)
     await state.set_state(state=None)
