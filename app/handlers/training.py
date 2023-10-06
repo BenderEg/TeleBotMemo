@@ -22,8 +22,7 @@ async def process_training_command(message: Message, state: FSMContext):
         shuffle(training_data)
         cur = 0
         await state.update_data(cur=cur, training_data=training_data)
-        await message.answer(text={choice(
-            (get_view_1, get_view_2))(training_data[cur])},
+        await message.answer(text=f'{choice((get_view_1, get_view_2))(training_data[cur])}',
                              reply_markup=builder.as_markup(),
                              parse_mode='html')
         await state.set_state(FSMmodel.training)
@@ -48,8 +47,7 @@ async def process_buttons_press(callback: CallbackQuery, state: FSMContext):
             if cur < len(training_data):
                 await state.update_data(training_data=training_data, cur=cur)
                 await callback.message.edit_text(
-                    text={choice((get_view_1, get_view_2))(
-                        training_data[cur])},
+                    text=f'{choice((get_view_1, get_view_2))(training_data[cur])}',
                     reply_markup=callback.message.reply_markup,
                     parse_mode='html')
             else:

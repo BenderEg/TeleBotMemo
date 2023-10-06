@@ -62,8 +62,7 @@ async def process_del_command(message: Message, state: FSMContext):
                 callback_data=f"{i}")
         del_builder.adjust(1)
         await message.answer(text='Нажмите для подтверждения \
-удаления на объект.',
-                             reply_markup=del_builder.as_markup())
+удаления на объект.', reply_markup=del_builder.as_markup())
     else:
         await message.answer(text='Объект отсутствует в базе.')
 

@@ -22,7 +22,7 @@ CREATE TABLE IF NOT EXISTS memo.bank (
     CONSTRAINT fk_user_id
 	FOREIGN KEY (user_id)
 		REFERENCES memo.users (id)
-		ON DELETE CASCADE 
+		ON DELETE CASCADE
 );
 
 ALTER ROLE sam SET search_path TO memo,public;
