@@ -18,13 +18,14 @@ async def process_training_command(message: Message, state: FSMContext):
     if not data.get('objects', False):
         await message.answer(
             'Сначала необходимо внести объекты в базу данных.')
-    learning_pool = list(filter(lambda x: x['n'] == 1, data['objects']))
-    if learning_pool:
-        res = list_learning_pool(learning_pool)
-        await message.answer(res, parse_mode='html')
     else:
-        await message.answer(
-            'Сегодня учить нечего, для вывода полного \
+        learning_pool = list(filter(lambda x: x['n'] == 1, data['objects']))
+        if learning_pool:
+            res = list_learning_pool(learning_pool)
+            await message.answer(res, parse_mode='html')
+        else:
+            await message.answer(
+                'Сегодня учить нечего, для вывода полного \
 списка слов нажимите /list_all')
 
 

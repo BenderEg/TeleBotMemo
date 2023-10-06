@@ -1,10 +1,12 @@
 from csv import reader
 from json import loads
 from random import choice
+from typing import List
 
 from aiogram import Bot
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, BotCommand
+from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 from models import DbConnect, redis, Chat, CsvReadExeption
 
@@ -25,6 +27,8 @@ async def set_main_menu(bot: Bot):
                    description='Режим изучения'),
         BotCommand(command='/add_category',
                    description='Добавление категории для хранения объектов'),
+        BotCommand(command='/choose_category',
+                   description='Выбор категории'),
         BotCommand(command='/help',
                    description='Справка по работе бота'),
         BotCommand(command='/cancel',
@@ -172,9 +176,12 @@ async def get_data(state: FSMContext, chat: int):
     data: dict = await state.get_data()
     if not data:
         objects: list = await get_data_db(chat, state)
+        if not objects:
+            objects = []
         await state.update_data(
             deleted_objects=[], objects=objects,
-            add_objects=[], training_data=[])
+            add_objects=[], training_data=[],
+            categories=[], category=None)
         data: dict = await state.get_data()
     return data
 
@@ -266,3 +273,26 @@ async def add_category_db(message: Message, state: FSMContext) -> None:
 VALUES (%s, %s) ON CONFLICT (user_id, name) DO NOTHING', (message.chat.id,
                                                           message.text))
     await state.clear()
+
+
+async def get_user_categories(message: Message):
+
+    with DbConnect() as db:
+
+        db.cur.execute('SELECT name \
+                       FROM categories \
+                       WHERE user_id=%s \
+                       ORDER BY name',
+                       (message.chat.id,))
+        categories: list[dict] = db.cur.fetchall()
+        if categories:
+            categories = [ele.get('name') for ele in categories]
+    return categories
+
+
+async def create_categories_list(lst: List[dict]):
+    builder = InlineKeyboardBuilder()
+    for i, ele in enumerate(lst):
+        builder.button(text=ele, callback_data=f"{i}")
+        builder.adjust(3, 1)
+    return builder

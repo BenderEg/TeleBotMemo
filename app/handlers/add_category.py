@@ -4,8 +4,8 @@ from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import default_state
 from aiogram.types import Message
 
-from congif import add_category_db
-from models import FSMmodel, TextFilter
+from congif import add_category_db, update_db, get_data
+from models import FSMmodel, TextFilter, redis
 
 router: Router = Router()
 
@@ -25,7 +25,7 @@ async def process_exit_add_category_mode_command(message: Message,
 
 
 @router.message(StateFilter(FSMmodel.add_category), Command(commands=(
-        'training', 'learn', 'delete', 'add')))
+        'training', 'learn', 'delete', 'add', 'choose_category')))
 async def proces_other_commands_press(message: Message):
     await message.answer(
             text='Сначала выйдите из режима \
@@ -44,6 +44,9 @@ async def process_add_category_in_progress_command(message: Message):
 @router.message(StateFilter(FSMmodel.add_category), TextFilter())
 async def process_new_category_command(message: Message, state: FSMContext):
     await add_category_db(message, state)
+    await get_data(state, message.chat.id)
+    await state.update_data(category=message.text)
+    await update_db(state, message.chat.id)
     await message.answer(f'Категория доступна в меню.\n\
 Для выбора категории нажмите /choose_сategory.\n\
 Вы вышли из режима создания категории.\n\

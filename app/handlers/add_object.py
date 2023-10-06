@@ -30,7 +30,7 @@ async def process_exit_add_mode_command(message: Message, state: FSMContext):
 
 
 @router.message(StateFilter(FSMmodel.add), Command(commands=(
-        'training', 'learn', 'delete')))
+        'training', 'learn', 'delete', 'add_category', 'choose_category')))
 async def proces_text_press(message: Message):
     await message.answer(
             text='Сначала выйдите из режима \
