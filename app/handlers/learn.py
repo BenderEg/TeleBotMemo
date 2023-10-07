@@ -21,7 +21,7 @@ async def process_training_command(message: Message, state: FSMContext):
     else:
         learning_pool = list(filter(lambda x: x['n'] == 1, data['objects']))
         if learning_pool:
-            res = list_learning_pool(learning_pool)
+            res = await list_learning_pool(learning_pool)
             await message.answer(res, parse_mode='html')
         else:
             await message.answer(

@@ -52,7 +52,7 @@ def _calc_interval(n: int, prev_interval: int, e_factor: float) -> int:
         return round(prev_interval*e_factor)
 
 
-async def list_all_data(lst: list) -> str:
+async def _group_by_categories(lst: list) -> dict:
 
     d = {}
     for ele in lst:
@@ -60,34 +60,46 @@ async def list_all_data(lst: list) -> str:
             d[ele['category']] = SortedList([(ele['object'], ele['meaning'])])
         else:
             d[ele['category']].add((ele['object'], ele['meaning']))
+    return d
+
+
+async def list_all_data(lst: list) -> str:
+
+    d = await _group_by_categories(lst)
     res = ''
     for key, value in d.items():
         header = f'<b>{key}:\n\n</b>'.upper()
         objects = '\n'.join(f"{i}. <b>{ele[0]}</b> = {ele[1]}."
-                            if i == len(lst)
+                            if i == len(value)
                             else f"{i}. <b>{ele[0]}</b> = {ele[1]};"
                             for i, ele in enumerate(value, 1))
         res += header + objects + '\n\n'
     return res
 
 
-def list_learning_pool(lst: list) -> str:
+async def list_learning_pool(lst: list) -> str:
 
-    return '\n======================\n'.join(
-        f"{i}. {choice((get_view_1, get_view_2))(ele, ' = ')}."
-        if i == len(lst)
-        else f"{i}. {choice((get_view_1, get_view_2))(ele, ' = ')};"
-        for i, ele in enumerate(lst, 1))
+    d = await _group_by_categories(lst)
+    res = ''
+    for key, value in d.items():
+        header = f'<b>{key}:\n\n</b>'.upper()
+        objects = '\n======================\n'.join(
+            f"{i}. {choice((get_view_1, get_view_2))(ele, ' = ')}."
+            if i == len(value)
+            else f"{i}. {choice((get_view_1, get_view_2))(ele, ' = ')};"
+            for i, ele in enumerate(value, 1))
+        res += header + objects + '\n\n'
+    return res
 
 
 def get_view_1(ele: dict, sep: str = "\n -------------------\n"):
 
-    return f"{ele['object']}{sep}<tg-spoiler>{ele['meaning']}</tg-spoiler>"
+    return f"{ele[0]}{sep}<tg-spoiler>{ele[1]}</tg-spoiler>"
 
 
 def get_view_2(ele: dict, sep: str = "\n -------------------\n"):
 
-    return f"{ele['meaning']}{sep}<tg-spoiler>{ele['object']}</tg-spoiler>"
+    return f"{ele[1]}{sep}<tg-spoiler>{ele[0]}</tg-spoiler>"
 
 
 def treat_object_list(lst: list) -> dict:
