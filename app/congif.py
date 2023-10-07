@@ -218,7 +218,8 @@ async def get_data_db(chat: int, state: FSMContext) -> list:
     print('retriving data from DB')
     with DbConnect() as db:
         db.cur.execute('SELECT object, meaning, e_factor, interval, n, \
-                       (next_date - now()::DATE) as diff \
+                       (next_date - now()::DATE) as diff, \
+                       category \
                        FROM bank \
                        WHERE user_id = %s \
                        ORDER BY object', (chat,))
@@ -250,15 +251,21 @@ async def update_values_db_auto(chat: Chat) -> None:
         with DbConnect() as db:
             if res.get('add_objects', False) and len(res["add_objects"]) > 0:
                 db.cur.executemany(
-                    'INSERT INTO bank (user_id, object, meaning) \
-VALUES (%s, %s, %s) ON CONFLICT (user_id, object) DO NOTHING', (
-                        (chat.id, ele['object'], ele['meaning'])
+                    'INSERT INTO bank (user_id, object, meaning, category) \
+                        VALUES (%s, %s, %s, %s) \
+                        ON CONFLICT (user_id, object, category) \
+                        DO NOTHING', (
+                        (chat.id, ele['object'],
+                         ele['meaning'], ele['category'])
                         for ele in res["add_objects"]))
             if res.get('deleted_objects', False):
                 for ele in res["deleted_objects"]:
                     db.cur.execute(
-                        'DELETE FROM bank WHERE user_id = %s AND object = %s',
-                        (chat.id, ele))
+                        'DELETE FROM bank \
+                         WHERE user_id = %s \
+                         AND object = %s \
+                         AND category = %s',
+                        (chat.id, ele[0], ele[1]))
             if res.get('training_data', False) \
                     and len(res["training_data"]) > 0:
                 for ele in res['training_data']:
@@ -269,17 +276,27 @@ VALUES (%s, %s, %s) ON CONFLICT (user_id, object) DO NOTHING', (
                     if 0 <= grade < 3:
                         db.cur.execute(
                             'UPDATE bank SET next_date = now()::DATE + 1, \
-interval = DEFAULT, n = DEFAULT, modified = DEFAULT \
-WHERE user_id = %s AND object = %s', (chat.id, ele["object"]))
+                             interval = DEFAULT, n = DEFAULT, \
+                             modified = DEFAULT \
+                             WHERE user_id = %s \
+                             AND object = %s \
+                             AND category = %s', (chat.id,
+                                                  ele["object"],
+                                                  ele["category"]))
                     elif grade >= 3:
                         e_factor = _calc_e_factor(e_factor, grade)
                         interval = _calc_interval(n, interval, e_factor)
                         db.cur.execute(
                             'UPDATE bank SET n = %s, e_factor = %s, \
-next_date = now()::DATE + %s, \
-interval = %s, modified = DEFAULT WHERE user_id = %s AND object = %s', (
+                             next_date = now()::DATE + %s, \
+                             interval = %s, \
+                             modified = DEFAULT \
+                             WHERE user_id = %s \
+                             AND object = %s \
+                             AND category = %s', (
                                 n+1, e_factor, interval,
-                                interval, chat.id, ele["object"]))
+                                interval, chat.id,
+                                ele["object"], ele["category"]))
 
 
 async def check_status_auto(chat: Chat) -> bool:
@@ -310,8 +327,11 @@ async def write_to_db_from_csv(chat: str, data: list) -> None:
     with DbConnect() as db:
 
         if data:
-            db.cur.executemany('INSERT INTO bank (user_id, object, meaning) \
-VALUES (%s, %s, %s) ON CONFLICT (user_id, object) DO NOTHING', (
+            db.cur.executemany('INSERT INTO bank \
+                               (user_id, object, meaning, category) \
+                               VALUES (%s, %s, %s, %s) \
+                               ON CONFLICT (user_id, object, category) \
+                               DO NOTHING', (
                     (chat, *ele) for ele in data))
 
 
