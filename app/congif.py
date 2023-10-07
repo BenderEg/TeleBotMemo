@@ -3,6 +3,8 @@ from json import loads
 from random import choice
 from typing import List
 
+from sortedcontainers import SortedList
+
 from aiogram import Bot
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, BotCommand
@@ -52,11 +54,21 @@ def _calc_interval(n: int, prev_interval: int, e_factor: float) -> int:
 
 async def list_all_data(lst: list) -> str:
 
-    lst = sorted(lst, key=lambda x: x['object'])
-    return '\n'.join(f"{i}. <b>{ele['object']}</b> = {ele['meaning']}."
-                     if i == len(lst)
-                     else f"{i}. <b>{ele['object']}</b> = {ele['meaning']};"
-                     for i, ele in enumerate(lst, 1))
+    d = {}
+    for ele in lst:
+        if ele['category'] not in d:
+            d[ele['category']] = SortedList([(ele['object'], ele['meaning'])])
+        else:
+            d[ele['category']].add((ele['object'], ele['meaning']))
+    res = ''
+    for key, value in d.items():
+        header = f'<b>{key}:\n\n</b>'.upper()
+        objects = '\n'.join(f"{i}. <b>{ele[0]}</b> = {ele[1]}."
+                            if i == len(lst)
+                            else f"{i}. <b>{ele[0]}</b> = {ele[1]};"
+                            for i, ele in enumerate(value, 1))
+        res += header + objects + '\n\n'
+    return res
 
 
 def list_learning_pool(lst: list) -> str:
