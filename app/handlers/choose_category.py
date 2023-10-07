@@ -58,11 +58,14 @@ async def process_text(message: Message):
 async def process_buttons_press(callback: CallbackQuery, state: FSMContext):
     data: dict = await get_data(state, callback.from_user.id)
     categories = data['categories']
-    category = categories[int(callback.data)]
+    value = int(callback.data)
+    category = None if value == len(categories) \
+        else categories[value]
     await state.update_data(category=category)
+    category_name = category if category else 'Все категории'
     await callback.message.edit_text(
-        text=f'Вы выбрали категорию <b>"{category}"</b>.\n\
-Для дальнейшей работы выберите комаду /add, /training или /learn.',
+        text=f'Вы выбрали категорию <b>"{category_name}"</b>.\n\
+Для дальнейшей работы выберите комаду /add, /training, /list_all или /learn.',
         parse_mode='html')
     await update_db(state, callback.from_user.id)
     await state.set_state(state=None)

@@ -41,5 +41,5 @@ CREATE TABLE IF NOT EXISTS memo.categories (
 );
 
 ALTER ROLE sam SET search_path TO memo,public;
-CREATE UNIQUE INDEX user_id_object_idx ON memo.bank (user_id, object);
+CREATE UNIQUE INDEX user_id_object_idx ON memo.bank (user_id, object, category);
 CREATE UNIQUE INDEX user_id_category_idx ON memo.categories (user_id, name);

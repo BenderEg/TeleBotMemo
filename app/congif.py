@@ -111,14 +111,21 @@ interval = %s, modified = DEFAULT WHERE user_id = %s AND object = %s',
                         (n+1, e_factor, interval,
                          interval, chat, ele["object"])
                     )
-        db.cur.execute('SELECT object, meaning, e_factor, interval, n, \
-                       (next_date - now()::DATE) as diff \
-                       FROM bank \
-                       WHERE user_id = %s and category = %s\
-                       ORDER BY object', (chat, res['category']))
+        if res['category']:
+            db.cur.execute('SELECT object, meaning, e_factor, interval, n, \
+                            (next_date - now()::DATE) as diff \
+                            FROM bank \
+                            WHERE user_id = %s and category = %s\
+                            ORDER BY object', (chat, res['category']))
+        else:
+            db.cur.execute('SELECT object, meaning, e_factor, interval, n, \
+                            (next_date - now()::DATE) as diff \
+                            FROM bank \
+                            WHERE user_id = %s \
+                            ORDER BY object', (chat, ))
         data = db.cur.fetchall()
-        if data and len(data) > 0:
-            await state.update_data(objects=data)
+        # if data and len(data) > 0:
+        await state.update_data(objects=data)
 
 
 async def del_values_db(state: FSMContext, chat: str) -> None:
@@ -170,8 +177,10 @@ async def get_data_db(chat: int, state: FSMContext) -> list:
     print('retriving data from DB')
     with DbConnect() as db:
         db.cur.execute('SELECT object, meaning, e_factor, interval, n, \
-(next_date - now()::DATE) as diff \
-FROM bank WHERE user_id = %s ORDER BY object', (chat,))
+                       (next_date - now()::DATE) as diff \
+                       FROM bank \
+                       WHERE user_id = %s \
+                       ORDER BY object', (chat,))
         data = db.cur.fetchall()
         if data and len(data) > 0:
             await state.update_data(objects=data)
@@ -277,8 +286,10 @@ async def list_added_objects(lst: list) -> str:
 async def add_category_db(message: Message, state: FSMContext) -> None:
     with DbConnect() as db:
         db.cur.execute('INSERT INTO categories (user_id, name) \
-VALUES (%s, %s) ON CONFLICT (user_id, name) DO NOTHING', (message.chat.id,
-                                                          message.text))
+                       VALUES (%s, %s) \
+                       ON CONFLICT (user_id, name) \
+                       DO NOTHING', (message.chat.id,
+                                     message.text))
     await state.clear()
 
 
@@ -301,5 +312,6 @@ async def create_categories_list(lst: List[dict]):
     builder = InlineKeyboardBuilder()
     for i, ele in enumerate(lst):
         builder.button(text=ele, callback_data=f"{i}")
-        builder.adjust(3, 1)
+    builder.button(text='Все категории', callback_data=f"{len(lst)}")
+    builder.adjust(3, 1)
     return builder
