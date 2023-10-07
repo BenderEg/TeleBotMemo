@@ -11,7 +11,10 @@ from models import FSMmodel, CategoryResponse, TextFilter
 router: Router = Router()
 
 
-@router.message(StateFilter(default_state, FSMmodel.choose_category),
+@router.message(StateFilter(default_state,
+                            FSMmodel.choose_category,
+                            FSMmodel.add,
+                            FSMmodel.choose_category),
                 Command(commands='choose_category'))
 async def process_choose_category_command(message: Message, state: FSMContext):
     categories = await get_user_categories(message)
@@ -65,7 +68,7 @@ async def process_buttons_press(callback: CallbackQuery, state: FSMContext):
     category_name = category if category else 'Все категории'
     await callback.message.edit_text(
         text=f'Вы выбрали категорию <b>"{category_name}"</b>.\n\
-Для дальнейшей работы выберите комаду /add, /training, /list_all или /learn.',
+Для дальнейшей работы выберите комаду /add, /delete, /training, /list_all или /learn.',
         parse_mode='html')
     await update_db(state, callback.from_user.id)
     await state.set_state(state=None)

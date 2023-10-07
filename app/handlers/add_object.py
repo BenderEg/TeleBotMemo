@@ -21,7 +21,7 @@ async def process_add_command(message: Message, state: FSMContext):
         await message.answer(
             text=f'Вы в режиме добавление объектов в базу. \n\
 Текущая категория <b>"{category}"</b>.\n\
-Для смены категории выберите /choose_categoty.\n\
+Для смены категории выберите /choose_category.\n\
 Введите объект в формате: ключ = значение.\n\
 Для выхода из режима ввода и сохранения данных нажмите /cancel',
             parse_mode='html')
@@ -76,6 +76,7 @@ async def process_new_entity_command(message: Message, state: FSMContext):
     value = await parse_add_value(message)
     if value:
         data: dict = await get_data(state, message.chat.id)
+        value['category'] = data['category']
         add_objects: list = data.get('add_objects', [])
         objects: list = data.get('objects', [])
         if any(map(

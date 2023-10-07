@@ -30,6 +30,8 @@ async def process_del_enter_command(message: Message, state: FSMContext):
 async def process_exit_del_mode_command(message: Message, state: FSMContext):
     await del_values_db(state, message.chat.id)
     await message.answer('Вы вышли из режима удаления объекта.')
+    await state.set_state(state=None)
+
 
 
 @router.message(StateFilter(FSMmodel.delete), Command(commands='delete'))
@@ -62,7 +64,9 @@ async def process_del_command(message: Message, state: FSMContext):
                 callback_data=f"{i}")
         del_builder.adjust(1)
         await message.answer(text='Нажмите для подтверждения \
-удаления на объект.', reply_markup=del_builder.as_markup())
+удаления на объект. \n\
+Нажмите /cancel для выхода из режима удаления',
+        reply_markup=del_builder.as_markup())
     else:
         await message.answer(text='Объект отсутствует в базе.')
 
@@ -75,7 +79,7 @@ async def process_buttons_press(callback: CallbackQuery, state: FSMContext):
     num: int = int(callback.data)
     if filtered_objects and 0 <= num < len(filtered_objects):
         cur = filtered_objects[num]
-        deleted_objects.append(cur['object'])
+        deleted_objects.append((cur['object'], cur['category']))
         objects = list(filter(lambda x: x['object'] != cur['object'],
                               data['objects']))
         await state.update_data(deleted_objects=deleted_objects,

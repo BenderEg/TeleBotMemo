@@ -98,28 +98,43 @@ async def update_db(state: FSMContext, chat: str) -> None:
                 interval = int(ele['interval'])
                 if 0 <= grade < 3:
                     db.cur.execute('UPDATE bank \
-SET next_date = now()::DATE + 1, \
-interval = DEFAULT, n = DEFAULT, modified = DEFAULT \
-WHERE user_id = %s AND object = %s', (chat, ele["object"]))
+                                    SET next_date = now()::DATE + 1, \
+                                    interval = DEFAULT, \
+                                    n = DEFAULT, \
+                                    modified = DEFAULT \
+                                    WHERE user_id = %s \
+                                    AND object = %s \
+                                    AND category = %s', (
+                                        chat, ele["object"],
+                                        ele['category']))
                 elif grade >= 3:
                     e_factor = _calc_e_factor(e_factor, grade)
                     interval = _calc_interval(n, interval, e_factor)
                     db.cur.execute(
-                        'UPDATE bank SET n = %s, e_factor = %s, \
-next_date = now()::DATE + %s, \
-interval = %s, modified = DEFAULT WHERE user_id = %s AND object = %s',
+                        'UPDATE bank \
+                         SET n = %s, e_factor = %s, \
+                         next_date = now()::DATE + %s, \
+                         interval = %s, \
+                         modified = DEFAULT \
+                         WHERE user_id = %s \
+                         AND object = %s \
+                         AND category = %s',
                         (n+1, e_factor, interval,
-                         interval, chat, ele["object"])
+                         interval, chat, ele["object"],
+                         ele['category'])
                     )
         if res['category']:
             db.cur.execute('SELECT object, meaning, e_factor, interval, n, \
-                            (next_date - now()::DATE) as diff \
+                            (next_date - now()::DATE) as diff, \
+                            category \
                             FROM bank \
-                            WHERE user_id = %s and category = %s\
+                            WHERE user_id = %s \
+                            AND category = %s \
                             ORDER BY object', (chat, res['category']))
         else:
             db.cur.execute('SELECT object, meaning, e_factor, interval, n, \
-                            (next_date - now()::DATE) as diff \
+                            (next_date - now()::DATE) as diff, \
+                            category \
                             FROM bank \
                             WHERE user_id = %s \
                             ORDER BY object', (chat, ))
@@ -132,12 +147,15 @@ async def del_values_db(state: FSMContext, chat: str) -> None:
 
     res = await state.get_data()
     with DbConnect() as db:
-        if res.get('deleted_objects', None) and res["deleted_objects"]:
+        if res.get('deleted_objects', False) and res["deleted_objects"]:
             for ele in res["deleted_objects"]:
                 db.cur.execute(
-                    'DELETE FROM bank WHERE user_id = %s AND object = %s', (
-                        chat, ele))
-    await state.clear()
+                    'DELETE FROM bank \
+                     WHERE user_id = %s \
+                     AND object = %s \
+                     AND category = %s', (
+                        chat, ele[0], ele[1]))
+    # await state.clear()
 
 
 async def parse_add_value(message: Message) -> None:
@@ -167,9 +185,8 @@ async def add_values_db(state: FSMContext, chat: str) -> None:
                                DO NOTHING', (
                 (chat, ele['object'],
                  ele['meaning'],
-                 res.get('category')) for ele in res["add_objects"])
+                 ele['category']) for ele in res["add_objects"])
                 )
-    await state.clear()
 
 
 async def get_data_db(chat: int, state: FSMContext) -> list:
