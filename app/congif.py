@@ -112,8 +112,10 @@ interval = %s, modified = DEFAULT WHERE user_id = %s AND object = %s',
                          interval, chat, ele["object"])
                     )
         db.cur.execute('SELECT object, meaning, e_factor, interval, n, \
-(next_date - now()::DATE) as diff \
-FROM bank WHERE user_id = %s ORDER BY object', (chat,))
+                       (next_date - now()::DATE) as diff \
+                       FROM bank \
+                       WHERE user_id = %s and category = %s\
+                       ORDER BY object', (chat, res['category']))
         data = db.cur.fetchall()
         if data and len(data) > 0:
             await state.update_data(objects=data)
