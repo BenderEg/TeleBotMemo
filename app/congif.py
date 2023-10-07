@@ -155,7 +155,7 @@ async def del_values_db(state: FSMContext, chat: str) -> None:
                      AND object = %s \
                      AND category = %s', (
                         chat, ele[0], ele[1]))
-    # await state.clear()
+    await state.update_data(deleted_objects=[])
 
 
 async def parse_add_value(message: Message) -> None:

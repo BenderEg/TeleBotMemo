@@ -14,7 +14,8 @@ router: Router = Router()
 @router.message(StateFilter(default_state,
                             FSMmodel.choose_category,
                             FSMmodel.add,
-                            FSMmodel.choose_category),
+                            FSMmodel.choose_category,
+                            FSMmodel.delete),
                 Command(commands='choose_category'))
 async def process_choose_category_command(message: Message, state: FSMContext):
     categories = await get_user_categories(message)
