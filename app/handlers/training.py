@@ -17,6 +17,8 @@ router: Router = Router()
 async def process_training_command(message: Message, state: FSMContext):
 
     data: dict = await get_data(state, message.chat.id)
+    category = data['category']
+    category_name = category if category else 'Все категории'
     training_data = list(filter(lambda x: x['diff'] <= 0, data['objects']))
     if training_data:
         shuffle(training_data)
@@ -28,10 +30,11 @@ async def process_training_command(message: Message, state: FSMContext):
         await state.set_state(FSMmodel.training)
     else:
         await message.answer(
-            text='На сегодня нет объектов для тренировки, \
-вы можете попробовать повторить \
+            text=f'На сегодня нет объектов для тренировки \
+в выбранной категории: <b>"{category_name}"</b>, \n\
+вы можете попробовать повторить \n\
 новые объекты или объекты, которые пока плохо запомнились:).\n\
-Для перехода в режим повторения нажмите /learn'
+Для перехода в режим повторения нажмите /learn', parse_mode='html'
                 )
 
 

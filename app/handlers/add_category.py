@@ -43,11 +43,17 @@ async def process_add_category_in_progress_command(message: Message):
 
 @router.message(StateFilter(FSMmodel.add_category), TextFilter())
 async def process_new_category_command(message: Message, state: FSMContext):
-    await add_category_db(message, state)
-    await get_data(state, message.chat.id)
-    await state.update_data(category=message.text)
-    await update_db(state, message.chat.id)
-    await message.answer(f'Категория доступна в меню.\n\
+    name = message.text
+    if name == 'Все категории':
+        await message.answer('Недопустимое имя. \
+Придумайте другое наименование категории. Для выхода из режима \
+создания категории нажмите /cancel')
+    else:
+        await add_category_db(name, message.chat.id, state)
+        await get_data(state, message.chat.id)
+        await state.update_data(category=message.text)
+        await update_db(state, message.chat.id)
+        await message.answer(f'Категория доступна в меню.\n\
 Для выбора категории нажмите /choose_сategory.\n\
 Вы вышли из режима создания категории.\n\
 Текущая категория <b>"{message.text}"</b>.', parse_mode='html')

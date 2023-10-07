@@ -283,13 +283,12 @@ async def list_added_objects(lst: list) -> str:
                             {ele[1]};" for i, ele in enumerate(lst, 1))
 
 
-async def add_category_db(message: Message, state: FSMContext) -> None:
+async def add_category_db(name: str, id: int, state: FSMContext) -> None:
     with DbConnect() as db:
         db.cur.execute('INSERT INTO categories (user_id, name) \
                        VALUES (%s, %s) \
                        ON CONFLICT (user_id, name) \
-                       DO NOTHING', (message.chat.id,
-                                     message.text))
+                       DO NOTHING', (id, name))
     await state.clear()
 
 
