@@ -84,22 +84,32 @@ async def list_learning_pool(lst: list) -> str:
     for key, value in d.items():
         header = f'<b>{key}:\n\n</b>'.upper()
         objects = '\n======================\n'.join(
-            f"{i}. {choice((get_view_1, get_view_2))(ele, ' = ')}."
+            f"{i}. {choice((_get_view_internal_1, _get_view_internal_2))(ele, ' = ')}."
             if i == len(value)
-            else f"{i}. {choice((get_view_1, get_view_2))(ele, ' = ')};"
+            else f"{i}. {choice((_get_view_internal_1, _get_view_internal_2))(ele, ' = ')};"
             for i, ele in enumerate(value, 1))
         res += header + objects + '\n\n'
     return res
 
 
-def get_view_1(ele: dict, sep: str = "\n -------------------\n"):
+def _get_view_internal_1(ele: dict, sep: str = "\n -------------------\n"):
 
     return f"{ele[0]}{sep}<tg-spoiler>{ele[1]}</tg-spoiler>"
 
 
-def get_view_2(ele: dict, sep: str = "\n -------------------\n"):
+def _get_view_internal_2(ele: dict, sep: str = "\n -------------------\n"):
 
     return f"{ele[1]}{sep}<tg-spoiler>{ele[0]}</tg-spoiler>"
+
+
+def get_view_1(ele: dict, sep: str = "\n -------------------\n"):
+
+    return f"{ele['object']}{sep}<tg-spoiler>{ele['meaning']}</tg-spoiler>"
+
+
+def get_view_2(ele: dict, sep: str = "\n -------------------\n"):
+
+    return f"{ele['meaning']}{sep}<tg-spoiler>{ele['object']}</tg-spoiler>"
 
 
 def treat_object_list(lst: list) -> dict:
@@ -205,7 +215,7 @@ async def add_values_db(state: FSMContext, chat: str) -> None:
             db.cur.executemany('INSERT INTO bank \
                                (user_id, object, meaning, category) \
                                VALUES (%s, %s, %s, %s) \
-                               ON CONFLICT (user_id, object) \
+                               ON CONFLICT (user_id, object, category) \
                                DO NOTHING', (
                 (chat, ele['object'],
                  ele['meaning'],
