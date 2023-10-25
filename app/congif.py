@@ -202,7 +202,7 @@ async def parse_add_value(message: Message) -> None:
 Для выхода из режима ввода нажмите /cancel')
         key = res[0].strip('\n .,').lower()
         value = res[1].strip('\n .,').lower()
-        d = {'object': key, 'meaning': value, 'diff': 1}
+        d = {'object': key, 'meaning': value, 'diff': 1, 'n': 1}
         return d
     except ValueError as p:
         await message.answer(text=f'{p}')

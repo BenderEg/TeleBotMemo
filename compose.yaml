@@ -5,7 +5,7 @@ services:
         env_file:
            - .env
         volumes:
-            - memo_db:/var/lib/postgresql/data
+            - memo_db_new:/var/lib/postgresql/data
         networks:
             - app
         healthcheck:
@@ -29,7 +29,7 @@ services:
 
     memo_main:
         container_name: memo_main
-        image: memo_main
+        image: memo_main:9
         depends_on:
             - db
             - red
@@ -40,8 +40,8 @@ services:
         restart: always
 
 volumes:
-    memo_db:
-        name: memo_db
+    memo_db_new:
+        name: memo_db_new
     test_red:
         name: test_red
 
