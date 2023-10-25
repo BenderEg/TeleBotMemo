@@ -311,7 +311,6 @@ async def update_values_db_auto(chat: Chat) -> None:
 
 async def check_status_auto(chat: Chat) -> bool:
     status: str = await redis.get(f'fsm:{chat.id}:{chat.id}:state')
-    print(status)
     return status == 'FSMmodel:training'
 
 
