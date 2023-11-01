@@ -29,7 +29,7 @@ services:
 
     memo_main:
         container_name: memo_main
-        image: memo_main:9
+        image: memo_main:latest
         depends_on:
             - db
             - red
