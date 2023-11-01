@@ -331,7 +331,7 @@ async def read_data_csv(file_name: str) -> list:
             raise CsvReadExeption()
 
 
-async def write_to_db_from_csv(chat: str, data: list) -> None:
+async def write_to_db_from_csv(chat: str, data: list, category: str) -> None:
 
     with DbConnect() as db:
 
@@ -341,7 +341,7 @@ async def write_to_db_from_csv(chat: str, data: list) -> None:
                                VALUES (%s, %s, %s, %s) \
                                ON CONFLICT (user_id, object, category) \
                                DO NOTHING', (
-                    (chat, *ele) for ele in data))
+                    (chat, *ele, category) for ele in data))
 
 
 async def list_added_objects(lst: list) -> str:

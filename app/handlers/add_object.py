@@ -56,11 +56,13 @@ async def process_add_in_progress_command(message: Message):
 
 @router.message(StateFilter(FSMmodel.add), FileFilter())
 async def add_from_file(message: Message, state: FSMContext, name: str):
+    data: dict = await get_data(state, message.chat.id)
+    category = data['category']
     with FileHandler(message.chat.id, name) as dest:
         file = message.document
         await file.bot.download(file=file, destination=path.join(dest, name))
         data: list = await read_data_csv(path.join(dest, name))
-        await write_to_db_from_csv(message.chat.id, data)
+        await write_to_db_from_csv(message.chat.id, data, category)
         res: str = await list_added_objects(data)
         if res:
             await message.answer(
