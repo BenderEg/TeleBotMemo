@@ -2,7 +2,7 @@ from os import environ
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
-from congif import update_values_db_auto
+from core.functions import update_values_db_auto
 from models import DbConnect, redis, Chat
 
 scheduler = AsyncIOScheduler()

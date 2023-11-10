@@ -6,7 +6,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import default_state
 from aiogram.types import Message
 
-from congif import add_values_db, read_data_csv, \
+from core.functions import add_values_db, read_data_csv, \
     write_to_db_from_csv, list_added_objects, parse_add_value, get_data
 from models import FSMmodel, FileFilter, FileHandler, TextFilter
 

@@ -15,7 +15,7 @@ from psycopg2.extras import RealDictCursor
 load_dotenv()
 
 BOT_TOKEN = environ["token"]
-redis: Redis = Redis(host=environ["host"],
+redis: Redis = Redis(host=environ["REDIS_HOST"],
                      encoding="utf-8",
                      decode_responses=True)
 storage: RedisStorage = RedisStorage(redis=redis)
@@ -85,8 +85,8 @@ class Con:
         self.con = psycopg2.connect(database=environ["POSTGRES_DB"],
                                     user=environ["POSTGRES_USER"],
                                     password=environ["POSTGRES_PASSWORD"],
-                                    host=environ["HOST"],
-                                    port=environ["PORT_DB"],
+                                    host=environ["POSTGRES_HOST"],
+                                    port=environ["POSTGRES_PORT"],
                                     cursor_factory=RealDictCursor)
         self.cur = self.con.cursor()
 

@@ -6,7 +6,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import default_state
 from aiogram.types import Message
 
-from congif import get_data, get_view_1, get_view_2, update_db
+from core.functions import get_data, get_view_1, get_view_2, update_db
 from lexicon import LEXICON_RU
 from models import builder, FSMmodel, Response, CallbackQuery, EndTraining
 

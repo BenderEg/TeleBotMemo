@@ -23,3 +23,7 @@ typing_extensions==4.7.1
 tzlocal==5.0.1
 yarl==1.9.2
 sortedcontainers==2.4.0
+sqlalchemy==2.0.23
+asyncpg==0.29.0
+pydantic-settings==2.0.3
+alembic==1.12.1

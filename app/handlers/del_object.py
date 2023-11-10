@@ -4,7 +4,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import default_state
 from aiogram.types import Message
 
-from congif import get_data, del_values_db
+from core.functions import get_data, del_values_db
 from models import FSMmodel, TextFilter, \
     InlineKeyboardBuilder, DigitResponse, CallbackQuery
 

@@ -4,7 +4,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import default_state
 from aiogram.types import Message
 
-from congif import add_category_db, update_db, get_data
+from core.functions import add_category_db, update_db, get_data
 from models import FSMmodel, TextFilter, redis
 
 router: Router = Router()

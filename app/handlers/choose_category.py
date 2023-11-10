@@ -4,7 +4,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import default_state
 from aiogram.types import Message, CallbackQuery
 
-from congif import get_user_categories, create_categories_list, \
+from core.functions import get_user_categories, create_categories_list, \
     get_data, update_db
 from models import FSMmodel, CategoryResponse, TextFilter
 

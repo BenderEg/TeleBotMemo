@@ -4,7 +4,7 @@ from aiogram.fsm.state import default_state
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
 
-from congif import get_data, list_learning_pool, list_all_data
+from core.functions import get_data, list_learning_pool, list_all_data
 from models import FSMmodel
 
 
