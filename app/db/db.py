@@ -1,10 +1,11 @@
+from sqlalchemy import MetaData
 from sqlalchemy.orm import declarative_base, sessionmaker
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 
 from core.config import settings
 
 
-Base = declarative_base(name='memo_database')
+Base = declarative_base(metadata=MetaData(schema="memo"))
 
 dsn = f'''postgresql+asyncpg://{
     settings.postgres_user}:{settings.postgres_password}@{

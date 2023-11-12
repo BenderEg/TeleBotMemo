@@ -1,2 +1,0 @@
-FROM postgres:latest
-COPY memo_bank.sql ./docker-entrypoint-initdb.d/memo_bank.sql
