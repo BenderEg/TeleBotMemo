@@ -5,38 +5,12 @@ from typing import List
 
 from sortedcontainers import SortedList
 
-from aiogram import Bot
+
 from aiogram.fsm.context import FSMContext
-from aiogram.types import Message, BotCommand
+from aiogram.types import Message
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 from models import DbConnect, redis, Chat, CsvReadExeption
-
-
-async def set_main_menu(bot: Bot):
-
-    # Создаем список с командами и их описанием для кнопки menu
-    main_menu_commands = [
-        BotCommand(command='/list_all',
-                   description='Вывод всех объектов'),
-        BotCommand(command='/add',
-                   description='Добавление объектов'),
-        BotCommand(command='/delete',
-                   description='Удаление объектов'),
-        BotCommand(command='/training',
-                   description='Режим тренировки'),
-        BotCommand(command='/learn',
-                   description='Режим изучения'),
-        BotCommand(command='/add_category',
-                   description='Добавление категории для хранения объектов'),
-        BotCommand(command='/choose_category',
-                   description='Выбор категории'),
-        BotCommand(command='/help',
-                   description='Справка по работе бота'),
-        BotCommand(command='/cancel',
-                   description='Для выхода из режима'),
-            ]
-    await bot.set_my_commands(main_menu_commands)
 
 
 def _calc_e_factor(prev: int, g: int) -> float:
@@ -351,16 +325,6 @@ async def list_added_objects(lst: list) -> str:
         return '\n'.join(f"{i}. <b>{ele[0]}</b> = {ele[1]}."
                          if i == len(lst) else f"{i}. <b>{ele[0]}</b> = \
                             {ele[1]};" for i, ele in enumerate(lst, 1))
-
-
-async def add_category_db(name: str, id: int, state: FSMContext) -> None:
-    with DbConnect() as db:
-        db.cur.execute('INSERT INTO categories (user_id, name) \
-                       VALUES (%s, %s) \
-                       ON CONFLICT (user_id, name) \
-                       DO NOTHING', (id, name))
-    await state.clear()
-
 
 async def get_user_categories(message: Message):
 

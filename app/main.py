@@ -1,7 +1,7 @@
 import asyncio
 from aiogram import Bot, Dispatcher
 
-from core.functions import set_main_menu
+from core.menu import set_main_menu
 from handlers import no_state_handler, training, add_object, \
     learn, del_object, final_state, add_category, choose_category
 from models import BOT_TOKEN, storage

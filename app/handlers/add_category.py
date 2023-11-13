@@ -3,8 +3,11 @@ from aiogram.filters import Command, StateFilter
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import default_state
 from aiogram.types import Message
+from asyncpg.exceptions import UniqueViolationError
+from sqlalchemy.exc import IntegrityError
 
-from core.functions import add_category_db, update_db, get_data
+from core.dependencies import category_service
+from core.functions import update_db, get_data
 from models import FSMmodel, TextFilter, redis
 
 router: Router = Router()
@@ -42,18 +45,25 @@ async def process_add_category_in_progress_command(message: Message):
 
 
 @router.message(StateFilter(FSMmodel.add_category), TextFilter())
-async def process_new_category_command(message: Message, state: FSMContext):
+async def process_new_category_command(message: Message,
+                                       state: FSMContext,
+                                       category_service: category_service):
     name = message.text
+    user_id = message.from_user.id
     if name == 'Все категории':
         await message.answer('Недопустимое имя. \
 Придумайте другое наименование категории. Для выхода из режима \
 создания категории нажмите /cancel')
     else:
-        await add_category_db(name, message.chat.id, state)
-        await get_data(state, message.chat.id)
-        await state.update_data(category=message.text)
-        await update_db(state, message.chat.id)
-        await message.answer(f'Категория доступна в меню.\n\
-Для выбора категории нажмите /choose_сategory.\n\
+        try:
+            await category_service.add_category(user_id, name)
+            await state.clear()
+            await message.answer(f'Категория доступна в меню.\n\
 Вы вышли из режима создания категории.\n\
 Текущая категория <b>"{message.text}"</b>.', parse_mode='html')
+            await get_data(state, message.chat.id)
+            await state.update_data(category=message.text)
+            await update_db(state, message.chat.id)
+        except IntegrityError:
+            await message.answer(text='Категория уже представлена в базе.\n\
+Введите другое именование. Для просмотра категорий выйдите из режима (/cancel) и нажмите /choose_category.')

@@ -12,9 +12,8 @@ router: Router = Router()
 
 
 @router.message(StateFilter(default_state,
-                            FSMmodel.choose_category,
                             FSMmodel.add,
-                            FSMmodel.choose_category,
+                            FSMmodel.add_category,
                             FSMmodel.delete),
                 Command(commands='choose_category'))
 async def process_choose_category_command(message: Message, state: FSMContext):
@@ -45,7 +44,7 @@ async def process_exit_choose_category_mode_command(message: Message,
 async def proces_other_commands_press(message: Message):
     await message.answer(
             text='Сначала выйдите из режима \
-выбора категории выбрав команду /cancel)'
+выбора категории выбрав команду /cancel.'
         )
 
 
