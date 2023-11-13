@@ -1,5 +1,5 @@
-from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+
 from db.shemas import Category
 
 class CategoryService:

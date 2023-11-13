@@ -6,7 +6,7 @@ from aiogram.types import Message
 from asyncpg.exceptions import UniqueViolationError
 from sqlalchemy.exc import IntegrityError
 
-from core.dependencies import category_service
+from core.dependencies import category_service, data_service
 from core.functions import update_db, get_data
 from models import FSMmodel, TextFilter, redis
 
@@ -47,7 +47,8 @@ async def process_add_category_in_progress_command(message: Message):
 @router.message(StateFilter(FSMmodel.add_category), TextFilter())
 async def process_new_category_command(message: Message,
                                        state: FSMContext,
-                                       category_service: category_service):
+                                       category_service: category_service,
+                                       data_service: data_service):
     name = message.text
     user_id = message.from_user.id
     if name == 'Все категории':
@@ -61,9 +62,9 @@ async def process_new_category_command(message: Message,
             await message.answer(f'Категория доступна в меню.\n\
 Вы вышли из режима создания категории.\n\
 Текущая категория <b>"{message.text}"</b>.', parse_mode='html')
-            await get_data(state, message.chat.id)
-            await state.update_data(category=message.text)
-            await update_db(state, message.chat.id)
+            await data_service.get_data(user_id, state)
+            await state.update_data(category=name)
+            await data_service.update_db(user_id, state)
         except IntegrityError:
             await message.answer(text='Категория уже представлена в базе.\n\
 Введите другое именование. Для просмотра категорий выйдите из режима (/cancel) и нажмите /choose_category.')

@@ -1,6 +1,6 @@
 import uuid
 
-from datetime import datetime
+from datetime import datetime, date
 from typing import Annotated, Optional
 
 from sqlalchemy import Column, String, \
@@ -52,9 +52,9 @@ class Object(Base):
         ForeignKey('users.id', ondelete='CASCADE'))
     object: Mapped[str] = mapped_column(nullable=False)
     meaning: Mapped[str] = mapped_column(nullable=False)
-    creation_date: Mapped[datetime] = mapped_column(
+    creation_date: Mapped[date] = mapped_column(
         server_default=expression.text('CURRENT_DATE'))
-    next_date: Mapped[datetime] = mapped_column(
+    next_date: Mapped[date] = mapped_column(
         server_default=expression.text('CURRENT_DATE+1'))
     interval: Mapped[float] = mapped_column(
         server_default='1', nullable=False)
