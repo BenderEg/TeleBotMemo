@@ -14,7 +14,7 @@ from psycopg2.extras import RealDictCursor
 
 load_dotenv()
 
-BOT_TOKEN = environ["token"]
+BOT_TOKEN = environ["TOKEN"]
 redis: Redis = Redis(host=environ["REDIS_HOST"],
                      encoding="utf-8",
                      decode_responses=True)
