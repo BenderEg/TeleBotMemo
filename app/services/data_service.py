@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import Optional
 
 from aiogram.fsm.context import FSMContext
-from sqlalchemy import select, label, update, Result
+from sqlalchemy import select, label, update, Result, insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from db.shemas import Category, Object
@@ -67,6 +67,17 @@ class DataService:
         result = await self.db.execute(stmt)
         data = self._prepare_data_for_serialisation(result)
         await state.update_data(objects=data)
+
+    async def add_values_db(self, user_id: int, state: FSMContext) -> None:
+        res = await state.get_data()
+        data = res.get('add_objects')
+        if data: # and len(res["add_objects"]) > 0:
+            stmt = [{'user_id': user_id,
+                     'object': ele['object'],
+                     'meaning': ele['meaning'],
+                     'category': ele['category']} for ele in data]
+            await self.db.execute(insert(Object), stmt)
+            await self.db.commit()
 
     def parse_add_value(self, text: str) -> dict:
         res = text.split('=')

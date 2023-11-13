@@ -8,7 +8,6 @@ from aiogram.types import Message
 from sqlalchemy.exc import IntegrityError
 
 from core.dependencies import data_service, csv_service
-from core.functions import add_values_db, parse_add_value, get_data
 from models import FSMmodel, FileFilter, FileHandler, TextFilter
 
 router: Router = Router()
@@ -40,9 +39,10 @@ async def process_add_command(message: Message,
 async def process_exit_add_mode_command(message: Message,
                                         state: FSMContext,
                                         data_service: data_service):
-    await add_values_db(state, message.chat.id)
+    user_id = message.from_user.id
+    await data_service.add_values_db(user_id, state)
     await message.answer('Вы вышли из режима ввода объекта.')
-    await state.set_state(state=None)
+    await state.clear()
 
 
 @router.message(StateFilter(FSMmodel.add), Command(commands=(

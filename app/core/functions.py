@@ -165,35 +165,6 @@ async def del_values_db(state: FSMContext, chat: str) -> None:
     await state.update_data(deleted_objects=[])
 
 
-async def parse_add_value(message: Message) -> None:
-
-    try:
-        res = message.text.split('=')
-        if len(res) != 2:
-            raise ValueError
-        key = res[0].strip('\n .,').lower()
-        value = res[1].strip('\n .,').lower()
-        d = {'object': key, 'meaning': value, 'diff': 1, 'n': 1}
-        return d
-    except ValueError as p:
-        await message.answer(text=f'{p}')
-
-
-async def add_values_db(state: FSMContext, chat: str) -> None:
-    res = await state.get_data()
-    with DbConnect() as db:
-        if res.get('add_objects', None) and len(res["add_objects"]) > 0:
-            db.cur.executemany('INSERT INTO bank \
-                               (user_id, object, meaning, category) \
-                               VALUES (%s, %s, %s, %s) \
-                               ON CONFLICT (user_id, object, category) \
-                               DO NOTHING', (
-                (chat, ele['object'],
-                 ele['meaning'],
-                 ele['category']) for ele in res["add_objects"])
-                )
-
-
 async def get_data_db(chat: int, state: FSMContext) -> list:
 
     print('retriving data from DB')
