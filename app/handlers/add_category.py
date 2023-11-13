@@ -3,12 +3,10 @@ from aiogram.filters import Command, StateFilter
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import default_state
 from aiogram.types import Message
-from asyncpg.exceptions import UniqueViolationError
 from sqlalchemy.exc import IntegrityError
 
 from core.dependencies import category_service, data_service
-from core.functions import update_db, get_data
-from models import FSMmodel, TextFilter, redis
+from models import FSMmodel, TextFilter
 
 router: Router = Router()
 

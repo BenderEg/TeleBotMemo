@@ -27,6 +27,7 @@ async def main() -> None:
     dp.include_router(final_state.router)
 
     dp.message.middleware(DIMiddleware())
+    dp.callback_query.middleware(DIMiddleware())
 
     # создаем меню
     await set_main_menu(bot)
