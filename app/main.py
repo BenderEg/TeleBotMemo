@@ -6,13 +6,15 @@ from handlers import no_state_handler, training, add_object, \
     learn, del_object, final_state, add_category, choose_category
 from models import BOT_TOKEN, storage
 from time_schedule import scheduler
-
+from db.postgres import get_session
+from aiogram3_di import DIMiddleware
 
 async def main() -> None:
 
     # Инициализируем бот и диспетчер
     bot: Bot = Bot(BOT_TOKEN)
-    dp: Dispatcher = Dispatcher(storage=storage)
+    dp: Dispatcher = Dispatcher(storage=storage,
+                                db=get_session)
 
     # Регистриуем роутеры в диспетчере
     dp.include_router(no_state_handler.router)
@@ -23,6 +25,8 @@ async def main() -> None:
     dp.include_router(add_object.router)
     dp.include_router(del_object.router)
     dp.include_router(final_state.router)
+
+    dp.message.middleware(DIMiddleware())
 
     # создаем меню
     await set_main_menu(bot)

@@ -11,7 +11,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql import func
 from sqlalchemy.sql import expression
 
-from db.db import Base
+from db.postgres import Base
 
 uuid_pk = Annotated[uuid.UUID, mapped_column(
     primary_key=True,

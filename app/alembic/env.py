@@ -7,7 +7,7 @@ from sqlalchemy import pool
 from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
 
-from db.db import dsn
+from db.postgres import dsn
 from db.shemas import Base
 
 # this is the Alembic Config object, which provides
