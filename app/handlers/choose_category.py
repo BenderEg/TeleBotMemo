@@ -72,9 +72,15 @@ async def process_buttons_press(callback: CallbackQuery,
         else categories[value]
     await state.update_data(category=category)
     category_name = category if category else 'Все категории'
-    await callback.message.edit_text(
-        text=f'Вы выбрали категорию <b>"{category_name}"</b>.\n\
+    if category_name == 'Все категории':
+        await callback.message.edit_text(
+            text=f'Вы выбрали категорию <b>"{category_name}"</b>.\n\
+Для дальнейшей работы выберите комаду /delete, /training, /list_all или /learn.',
+            parse_mode='html')
+    else:
+        await callback.message.edit_text(
+            text=f'Вы выбрали категорию <b>"{category_name}"</b>.\n\
 Для дальнейшей работы выберите комаду /add, /delete, /training, /list_all или /learn.',
-        parse_mode='html')
+            parse_mode='html')
     await data_service.update_db(user_id, state)
     await state.set_state(state=None)

@@ -8,7 +8,6 @@ from sortedcontainers import SortedList
 
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
-from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 from models import DbConnect, redis, Chat, CsvReadExeption
 
@@ -171,9 +170,7 @@ async def parse_add_value(message: Message) -> None:
     try:
         res = message.text.split('=')
         if len(res) != 2:
-            raise ValueError('Значение некорректно. \
-Введите объект в формате: ключ = значение.\n\
-Для выхода из режима ввода нажмите /cancel')
+            raise ValueError
         key = res[0].strip('\n .,').lower()
         value = res[1].strip('\n .,').lower()
         d = {'object': key, 'meaning': value, 'diff': 1, 'n': 1}
@@ -286,65 +283,3 @@ async def update_values_db_auto(chat: Chat) -> None:
 async def check_status_auto(chat: Chat) -> bool:
     status: str = await redis.get(f'fsm:{chat.id}:{chat.id}:state')
     return status == 'FSMmodel:training'
-
-
-def _strip_value(value: str):
-
-    return value.strip('\n .,;:!').lower()
-
-
-async def read_data_csv(file_name: str) -> list:
-
-    with open(file_name, newline='') as f:
-        try:
-            data = reader(f, delimiter='=')
-            cur = filter(lambda x: len(x) == 2, data)
-            res = list(map(lambda x: [_strip_value(ele) for ele in x], cur))
-            return res
-        except:
-            raise CsvReadExeption()
-
-
-async def write_to_db_from_csv(chat: str, data: list, category: str) -> None:
-
-    with DbConnect() as db:
-
-        if data:
-            db.cur.executemany('INSERT INTO bank \
-                               (user_id, object, meaning, category) \
-                               VALUES (%s, %s, %s, %s) \
-                               ON CONFLICT (user_id, object, category) \
-                               DO NOTHING', (
-                    (chat, *ele, category) for ele in data))
-
-
-async def list_added_objects(lst: list) -> str:
-
-    if lst:
-        lst = sorted(lst)
-        return '\n'.join(f"{i}. <b>{ele[0]}</b> = {ele[1]}."
-                         if i == len(lst) else f"{i}. <b>{ele[0]}</b> = \
-                            {ele[1]};" for i, ele in enumerate(lst, 1))
-
-async def get_user_categories(message: Message):
-
-    with DbConnect() as db:
-
-        db.cur.execute('SELECT name \
-                       FROM categories \
-                       WHERE user_id=%s \
-                       ORDER BY name',
-                       (message.chat.id,))
-        categories: list[dict] = db.cur.fetchall()
-        if categories:
-            categories = [ele.get('name') for ele in categories]
-    return categories
-
-
-async def create_categories_list(lst: List[dict]):
-    builder = InlineKeyboardBuilder()
-    for i, ele in enumerate(lst):
-        builder.button(text=ele, callback_data=f"{i}")
-    builder.button(text='Все категории', callback_data=f"{len(lst)}")
-    builder.adjust(3, 1)
-    return builder

@@ -68,6 +68,15 @@ class DataService:
         data = self._prepare_data_for_serialisation(result)
         await state.update_data(objects=data)
 
+    def parse_add_value(self, text: str) -> dict:
+        res = text.split('=')
+        if len(res) != 2:
+            raise ValueError
+        key = res[0].strip('\n .,').lower()
+        value = res[1].strip('\n .,').lower()
+        d = {'object': key, 'meaning': value, 'diff': 1, 'n': 1}
+        return d
+
     def _calc_e_factor(self, prev_value: int, grade: int) -> float:
         return max(prev_value+(0.1-(5-grade)*(0.08+(5-grade)*0.02)), 1.3)
 
