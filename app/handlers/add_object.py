@@ -7,8 +7,9 @@ from aiogram.fsm.state import default_state
 from aiogram.types import Message
 from sqlalchemy.exc import IntegrityError
 
-from core.dependencies import data_service, csv_service
-from models import FSMmodel, FileFilter, FileHandler, TextFilter
+from core.dependencies import add_service, csv_service
+from models2.filters import FileFilter, TextFilter
+from models import FSMmodel, FileHandler
 
 router: Router = Router()
 
@@ -16,9 +17,9 @@ router: Router = Router()
 @router.message(StateFilter(default_state), Command(commands='add'))
 async def process_add_command(message: Message,
                               state: FSMContext,
-                              data_service: data_service):
+                              service: add_service):
     user_id = message.chat.id
-    data: dict = await data_service.get_data(user_id, state)
+    data: dict = await service.get_data(user_id, state)
     category = data.get('category')
     if category and category != 'Все категории':
         await message.answer(
@@ -38,9 +39,9 @@ async def process_add_command(message: Message,
 @router.message(StateFilter(FSMmodel.add), Command(commands='cancel'))
 async def process_exit_add_mode_command(message: Message,
                                         state: FSMContext,
-                                        data_service: data_service):
+                                        service: add_service):
     user_id = message.from_user.id
-    await data_service.add_values_db(user_id, state)
+    await service.add_values_db(user_id, state)
     await message.answer('Вы вышли из режима ввода объекта.')
     await state.clear()
 
@@ -63,19 +64,19 @@ async def process_add_in_progress_command(message: Message):
 
 @router.message(StateFilter(FSMmodel.add), FileFilter())
 async def add_from_file(message: Message, state: FSMContext,
-                        name: str, data_service: data_service,
-                        csv_service: csv_service):
+                        name: str,
+                        service: csv_service):
     user_id = message.chat.id
-    data: dict = await data_service.get_data(user_id, state)
+    data: dict = await service.get_data(user_id, state)
     category = data['category']
     with FileHandler(user_id, name) as dest:
         file = message.document
         await file.bot.download(file=file, destination=path.join(dest, name))
-        data: list = csv_service.read_data_csv(path.join(dest, name))
+        data: list = service.read_data_csv(path.join(dest, name))
         if data:
             try:
-                await csv_service.add_data_to_db(data, user_id, category)
-                res: str = csv_service.list_added_objects(data)
+                await service.add_data_to_db(data, user_id, category)
+                res: str = service.list_added_objects(data)
                 await message.answer(
                     f'Объекты добавлены в базу:\n{res}', parse_mode='html')
                 await state.clear()
@@ -89,12 +90,12 @@ async def add_from_file(message: Message, state: FSMContext,
 async def process_new_entity_command(message: Message,
                                      state: FSMContext,
                                      text: str,
-                                     data_service: data_service):
+                                     service: add_service):
     user_id = message.from_user.id
     try:
-        value = data_service.parse_add_value(text)
+        value = service.parse_add_value(text)
         if value:
-            data: dict = await data_service.get_data(user_id, state)
+            data: dict = await service.get_data(user_id, state)
             value['category'] = data['category']
             add_objects: list = data.get('add_objects', [])
             objects: list = data.get('objects', [])

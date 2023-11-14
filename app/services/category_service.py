@@ -1,13 +1,9 @@
 from aiogram.utils.keyboard import InlineKeyboardBuilder
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from db.shemas import Category, User
+from services.base_service import BaseService
 
-class CategoryService:
-
-    def __init__(self, db: AsyncSession) -> None:
-
-        self.db = db
+class CategoryService(BaseService):
 
     async def add_category(self, user_id: int, name: str) -> None:
         category = Category(user_id=user_id, name=name)

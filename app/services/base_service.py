@@ -2,12 +2,12 @@ from datetime import datetime
 from typing import Optional
 
 from aiogram.fsm.context import FSMContext
-from sqlalchemy import select, label, update, Result, insert
+from sqlalchemy import select, label, update, Result
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from db.shemas import Category, Object
+from db.shemas import Object
 
-class DataService:
+class BaseService:
 
     def __init__(self, db: AsyncSession) -> None:
 
@@ -67,26 +67,6 @@ class DataService:
         result = await self.db.execute(stmt)
         data = self._prepare_data_for_serialisation(result)
         await state.update_data(objects=data)
-
-    async def add_values_db(self, user_id: int, state: FSMContext) -> None:
-        res = await state.get_data()
-        data = res.get('add_objects')
-        if data: # and len(res["add_objects"]) > 0:
-            stmt = [{'user_id': user_id,
-                     'object': ele['object'],
-                     'meaning': ele['meaning'],
-                     'category': ele['category']} for ele in data]
-            await self.db.execute(insert(Object), stmt)
-            await self.db.commit()
-
-    def parse_add_value(self, text: str) -> dict:
-        res = text.split('=')
-        if len(res) != 2:
-            raise ValueError
-        key = res[0].strip('\n .,').lower()
-        value = res[1].strip('\n .,').lower()
-        d = {'object': key, 'meaning': value, 'diff': 1, 'n': 1}
-        return d
 
     def _calc_e_factor(self, prev_value: int, grade: int) -> float:
         return max(prev_value+(0.1-(5-grade)*(0.08+(5-grade)*0.02)), 1.3)

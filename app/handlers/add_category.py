@@ -5,7 +5,7 @@ from aiogram.fsm.state import default_state
 from aiogram.types import Message
 from sqlalchemy.exc import IntegrityError
 
-from core.dependencies import category_service, data_service
+from core.dependencies import category_service
 from models import FSMmodel, TextFilter
 
 router: Router = Router()
@@ -45,8 +45,7 @@ async def process_add_category_in_progress_command(message: Message):
 @router.message(StateFilter(FSMmodel.add_category), TextFilter())
 async def process_new_category_command(message: Message,
                                        state: FSMContext,
-                                       category_service: category_service,
-                                       data_service: data_service):
+                                       service: category_service):
     name = message.text
     user_id = message.from_user.id
     if name == 'Все категории':
@@ -55,14 +54,14 @@ async def process_new_category_command(message: Message,
 создания категории нажмите /cancel')
     else:
         try:
-            await category_service.add_category(user_id, name)
+            await service.add_category(user_id, name)
             await state.clear()
             await message.answer(f'Категория доступна в меню.\n\
 Вы вышли из режима создания категории.\n\
 Текущая категория <b>"{message.text}"</b>.', parse_mode='html')
-            await data_service.get_data(user_id, state)
+            await service.get_data(user_id, state)
             await state.update_data(category=name)
-            await data_service.update_db(user_id, state)
+            await service.update_db(user_id, state)
         except IntegrityError:
             await message.answer(text='Категория уже представлена в базе.\n\
 Введите другое именование. Для просмотра категорий выйдите из режима (/cancel) и нажмите /choose_category.')

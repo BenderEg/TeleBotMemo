@@ -1,16 +1,12 @@
 from csv import reader
 
 from sqlalchemy import insert
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from db.shemas import Object
-from models import CsvReadExeption
+from models2.exeptions import CsvReadExeption
+from services.base_service import BaseService
 
-class CsvService:
-
-    def __init__(self, db: AsyncSession) -> None:
-
-        self.db = db
+class CsvService(BaseService):
 
     def read_data_csv(self, file_name: str) -> list:
         with open(file_name, newline='') as f:

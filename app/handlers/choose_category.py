@@ -4,7 +4,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import default_state
 from aiogram.types import Message, CallbackQuery
 
-from core.dependencies import category_service, data_service
+from core.dependencies import category_service
 from models import FSMmodel, CategoryResponse, TextFilter
 
 router: Router = Router()
@@ -17,13 +17,12 @@ router: Router = Router()
                 Command(commands='choose_category'))
 async def process_choose_category_command(message: Message,
                                           state: FSMContext,
-                                          category_service: category_service,
-                                          data_service: data_service):
+                                          service: category_service):
     user_id = message.from_user.id
-    categories = await category_service.get_user_categories(user_id)
+    categories = await service.get_user_categories(user_id)
     if categories:
-        builder = category_service.create_categories_list(categories)
-        await data_service.get_data(user_id, state)
+        builder = service.create_categories_list(categories)
+        await service.get_data(user_id, state)
         await state.update_data(categories=categories)
         await message.answer(
             text='Выберите категорию из списка.',
@@ -63,9 +62,9 @@ async def process_text(message: Message):
                        CategoryResponse())
 async def process_buttons_press(callback: CallbackQuery,
                                 state: FSMContext,
-                                data_service: data_service):
+                                service: category_service):
     user_id = callback.from_user.id
-    data: dict = await data_service.get_data(user_id, state)
+    data: dict = await service.get_data(user_id, state)
     categories = data['categories']
     value = int(callback.data)
     category = None if value == len(categories) \
@@ -82,5 +81,5 @@ async def process_buttons_press(callback: CallbackQuery,
             text=f'Вы выбрали категорию <b>"{category_name}"</b>.\n\
 Для дальнейшей работы выберите комаду /add, /delete, /training, /list_all или /learn.',
             parse_mode='html')
-    await data_service.update_db(user_id, state)
+    await service.update_db(user_id, state)
     await state.set_state(state=None)

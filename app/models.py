@@ -119,11 +119,6 @@ class Chat():
     id: int
 
 
-class CsvReadExeption(Exception):
-
-    pass
-
-
 class FileHandler():
 
     def __init__(self, chat: str, name: str) -> None:
