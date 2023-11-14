@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Optional
 
 from aiogram.fsm.context import FSMContext
@@ -36,42 +36,46 @@ class BaseService:
     async def update_db(self, user_id: int, state: FSMContext) -> None:
         res = await state.get_data()
         if res.get('training_data'): # and len(res["training_data"]) > 0:
+            stmt = []
             for ele in res['training_data']:
                 grade = int(ele.get('grade', -1))
                 e_factor = float(ele['e_factor'])
                 n = int(ele['n'])
                 interval = int(ele['interval'])
                 if 0 <= grade < 3:
-                    await self.db.execute(update(
+                    stmt.append(
                         {'id': ele.get('id'),
-                         'next_date': datetime.utcnow().date() + 1,
-                         'interval': 1.0,
-                         'n': 1
-                        }
-                    ))
+                         'n': 1,
+                         'e_factor': e_factor,
+                         'next_date': datetime.utcnow().date() + timedelta(1),
+                         'interval': 1.0
+                        })
                 elif grade >= 3:
                     e_factor = self._calc_e_factor(e_factor, grade)
                     interval = self._calc_interval(n, interval, e_factor)
-                    await self.db.execute(update(
+                    stmt.append(
                         {'id': ele.get('id'),
                          'n': n+1,
                          'e_factor': e_factor,
-                         'next_date': datetime.utcnow().date() + interval,
+                         'next_date': datetime.utcnow().date() + timedelta(interval),
                          'interval': interval
-                        }
-                    ))
+                        })
+            await self.db.execute(update(Object),
+                        stmt
+                    )
         if res['category']:
             stmt = self._get_select_statement_with_category(user_id, res['category'])
         else:
             stmt = self._get_select_statement(user_id)
         result = await self.db.execute(stmt)
+        await self.db.commit()
         data = self._prepare_data_for_serialisation(result)
-        await state.update_data(objects=data)
+        await state.update_data(objects=data, training_data=[])
 
     def _calc_e_factor(self, prev_value: int, grade: int) -> float:
         return max(prev_value+(0.1-(5-grade)*(0.08+(5-grade)*0.02)), 1.3)
 
-    def _calc_interval(n: int, prev_interval: int, e_factor: float) -> int:
+    def _calc_interval(self, n: int, prev_interval: int, e_factor: float) -> int:
         if n <= 1:
             return 1
         elif n == 2:

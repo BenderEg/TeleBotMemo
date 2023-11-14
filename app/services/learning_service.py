@@ -31,13 +31,17 @@ class LearningService(BaseService):
         return res
 
     def _get_view_internal_1(self, ele: dict, sep: str = "\n -------------------\n"):
-
         return f"{ele[0]}{sep}<tg-spoiler>{ele[1]}</tg-spoiler>"
 
-
     def _get_view_internal_2(self, ele: dict, sep: str = "\n -------------------\n"):
-
         return f"{ele[1]}{sep}<tg-spoiler>{ele[0]}</tg-spoiler>"
+
+    def _get_view_1(self, ele: dict, sep: str = "\n -------------------\n"):
+        return f"{ele['object']}{sep}<tg-spoiler>{ele['meaning']}</tg-spoiler>"
+
+    def _get_view_2(self, ele: dict, sep: str = "\n -------------------\n"):
+        return f"{ele['meaning']}{sep}<tg-spoiler>{ele['object']}</tg-spoiler>"
+
 
     def list_all_data(self, lst: list) -> str:
 
@@ -51,6 +55,10 @@ class LearningService(BaseService):
                             for i, ele in enumerate(value, 1))
             res += header + objects + '\n\n'
         return res
+
+    def prepare_text_response(self, ele: dict) -> str:
+        text = choice((self._get_view_1, self._get_view_2))(ele)
+        return text
 
     async def message_paginator(self, text: str, message: Message) -> str:
         i = 0

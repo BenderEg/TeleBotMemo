@@ -10,10 +10,10 @@ router: Router = Router()
 
 @router.message(CommandStart())
 async def process_start_command(message: Message,
-                                user_service: user_service):
+                                service: user_service):
     id=message.from_user.id,
     name=message.from_user.username
-    await user_service.start(id, name)
+    await service.start(id, name)
     msg = f'Привет, {name}.\n'
     msg += LEXICON_RU['/start']
     await message.answer(text=msg)

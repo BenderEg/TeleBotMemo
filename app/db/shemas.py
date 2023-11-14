@@ -1,12 +1,9 @@
 import uuid
 
 from datetime import datetime, date
-from typing import Annotated, Optional
+from typing import Annotated
 
-from sqlalchemy import Column, String, \
-    ForeignKey, TIMESTAMP, JSON, Table, \
-    UniqueConstraint
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy import ForeignKey, TIMESTAMP, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql import func
 from sqlalchemy.sql import expression
@@ -19,12 +16,12 @@ uuid_pk = Annotated[uuid.UUID, mapped_column(
         "uuid_generate_v4()"))]
 timestamp = Annotated[datetime,
 mapped_column(TIMESTAMP(timezone=True),
-              server_default=expression.text('now()'),
+              server_default=expression.text("TIMEZONE('utc', now())"),
               nullable=False)]
 timestamp_upd = Annotated[datetime,
 mapped_column(TIMESTAMP(timezone=True),
-              onupdate=func.now(),
-              server_default=expression.text('now()'),
+              onupdate=datetime.utcnow,
+              server_default=expression.text("TIMEZONE('utc', now())"),
               nullable=False)]
 
 class User(Base):
