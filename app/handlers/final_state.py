@@ -2,7 +2,7 @@ from aiogram import Router
 from aiogram.types import Message
 
 from lexicon import LEXICON_RU
-from models import TextFilter
+from models2.filters import TextFilter
 
 
 router: Router = Router()

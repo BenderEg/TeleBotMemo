@@ -9,70 +9,7 @@ from sortedcontainers import SortedList
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
 
-from models import DbConnect, redis, Chat, CsvReadExeption
-
-
-def _calc_e_factor(prev: int, g: int) -> float:
-    return max(prev+(0.1-(5-g)*(0.08+(5-g)*0.02)), 1.3)
-
-
-def _calc_interval(n: int, prev_interval: int, e_factor: float) -> int:
-    if n <= 1:
-        return 1
-    elif n == 2:
-        return 6
-    else:
-        return round(prev_interval*e_factor)
-
-
-async def _group_by_categories(lst: list) -> dict:
-
-    d = {}
-    for ele in lst:
-        if ele['category'] not in d:
-            d[ele['category']] = SortedList([(ele['object'], ele['meaning'])])
-        else:
-            d[ele['category']].add((ele['object'], ele['meaning']))
-    return d
-
-
-async def list_all_data(lst: list) -> str:
-
-    d = await _group_by_categories(lst)
-    res = ''
-    for key, value in d.items():
-        header = f'<b>{key}:\n\n</b>'.upper()
-        objects = '\n'.join(f"{i}. <b>{ele[0]}</b> = {ele[1]}."
-                            if i == len(value)
-                            else f"{i}. <b>{ele[0]}</b> = {ele[1]};"
-                            for i, ele in enumerate(value, 1))
-        res += header + objects + '\n\n'
-    return res
-
-
-async def list_learning_pool(lst: list) -> str:
-
-    d = await _group_by_categories(lst)
-    res = ''
-    for key, value in d.items():
-        header = f'<b>{key}:\n\n</b>'.upper()
-        objects = '\n======================\n'.join(
-            f"{i}. {choice((_get_view_internal_1, _get_view_internal_2))(ele, ' = ')}."
-            if i == len(value)
-            else f"{i}. {choice((_get_view_internal_1, _get_view_internal_2))(ele, ' = ')};"
-            for i, ele in enumerate(value, 1))
-        res += header + objects + '\n\n'
-    return res
-
-
-def _get_view_internal_1(ele: dict, sep: str = "\n -------------------\n"):
-
-    return f"{ele[0]}{sep}<tg-spoiler>{ele[1]}</tg-spoiler>"
-
-
-def _get_view_internal_2(ele: dict, sep: str = "\n -------------------\n"):
-
-    return f"{ele[1]}{sep}<tg-spoiler>{ele[0]}</tg-spoiler>"
+from models import DbConnect, redis, Chat
 
 
 def get_view_1(ele: dict, sep: str = "\n -------------------\n"):

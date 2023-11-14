@@ -5,7 +5,6 @@ from aiogram.fsm.state import default_state
 from aiogram.types import Message
 
 from core.dependencies import del_service
-# from core.functions import get_data, del_values_db
 from models2.filters import TextFilter, UuidFilter
 from models import FSMmodel, CallbackQuery
 
