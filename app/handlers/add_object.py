@@ -23,10 +23,10 @@ async def process_add_command(message: Message,
     user_id = message.chat.id
     try:
         data: dict = await service.get_data(user_id, state)
-        category = data.get('category')
+        category: str = data.get('category')
         if category and category != 'Все категории':
             await message.answer(text=f'Вы в режиме добавление объектов в базу. \n\
-Текущая категория <b>"{category}"</b>.\n\
+Текущая категория <b>"{category.capitalize()}"</b>.\n\
 Для смены категории выберите /choose_category.\n\
 Введите объект в формате: ключ = значение.\n\
 Для выхода из режима ввода и сохранения данных нажмите /cancel.',

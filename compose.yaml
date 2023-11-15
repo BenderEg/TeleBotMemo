@@ -3,7 +3,7 @@ services:
         container_name: db
         image: bendereg/postgres_memo
         env_file:
-           - .env
+            - .env
         volumes:
             - memo_db_new:/var/lib/postgresql/data
             - ./db:/docker-entrypoint-initdb.d/
@@ -32,7 +32,7 @@ services:
 
     memo_main:
         container_name: memo_main
-        image: memo_main:latest
+        build: .
         depends_on:
             - db
             - red

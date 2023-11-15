@@ -19,12 +19,12 @@ async def process_del_enter_command(message: Message,
     user_id = message.from_user.id
     try:
         data: dict = await service.get_data(user_id, state)
-        category = data.get('category')
+        category: str = data.get('category')
         category_name = category if category else 'Все категории'
         if data.get('objects'):
             await message.answer(
             text=f'Вы в режиме удаления объекта из базы.\n\
-Текущая категория: <b>"{category_name}"</b>.\n\
+Текущая категория: <b>"{category_name.capitalize()}"</b>.\n\
 Введите наименование объекта.\n\
 Для выхода из режима удаления нажмите /cancel.\n\
 Для смены категории нажмите /choose_category',
@@ -91,7 +91,7 @@ async def process_del_command(message: Message,
                 reply_markup=del_builder.as_markup())
         else:
             await message.answer(text=f"Объект отсутствует в базе \
-(категория {data.get('category')})")
+(категория '{data.get('category').capitalize()}').")
     except ServerErrorExeption as err:
         await message.answer(text=err.msg)
         await state.clear()

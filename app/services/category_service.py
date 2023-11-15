@@ -13,10 +13,10 @@ class CategoryService(BaseService):
         await self.db.commit()
 
     def create_categories_list(self,
-                               categories: list) -> InlineKeyboardBuilder:
+                               categories: list[str]) -> InlineKeyboardBuilder:
         builder = InlineKeyboardBuilder()
         for ele in categories:
-            builder.button(text=ele, callback_data=ele)
+            builder.button(text=ele.capitalize(), callback_data=ele)
         builder.button(text='Все категории',
                        callback_data='Все категории')
         builder.adjust(3, 1)

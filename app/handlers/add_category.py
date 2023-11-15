@@ -68,7 +68,7 @@ async def process_new_category_command(message: Message,
             await state.set_state(state=None)
             await message.answer(f'Категория доступна в меню.\n\
 Вы вышли из режима создания категории.\n\
-Текущая категория <b>"{text}"</b>.', parse_mode='html')
+Текущая категория <b>"{text.capitalize()}"</b>.', parse_mode='html')
         except IntegrityError as err:
             logging.error(f"Категория '{text}' уже существует у пользователя: {user_id}")
             await message.answer(text='Категория уже представлена в базе.\n\

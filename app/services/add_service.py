@@ -6,7 +6,7 @@ class AddService(BaseService):
         res = text.split('=')
         if len(res) != 2:
             raise ValueError
-        key = res[0].strip('\n .,').lower()
-        value = res[1].strip('\n .,').lower()
+        key = res[0].strip('\n .,').capitalize()
+        value = res[1].strip('\n .,')
         d = {'object': key, 'meaning': value, 'diff': 1, 'n': 1}
         return d

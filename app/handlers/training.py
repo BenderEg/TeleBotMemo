@@ -39,10 +39,10 @@ async def process_training_command(message: Message,
         else:
             await message.answer(
                 text=f'На сегодня нет объектов для тренировки \
-в выбранной категории: <b>"{category_name}"</b>, \n\
-вы можете попробовать повторить \n\
+в выбранной категории: <b>"{category_name.capitalize()}"</b>, \
+вы можете попробовать повторить \
 новые объекты или объекты, которые пока плохо запомнились:).\n\
-Для перехода в режим повторения нажмите /learn', parse_mode='html')
+Для перехода в режим повторения нажмите /learn.', parse_mode='html')
     except ServerErrorExeption as err:
         await message.answer(text=err.msg)
         await state.clear()

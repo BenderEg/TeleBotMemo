@@ -23,7 +23,7 @@ async def process_choose_category_command(message: Message,
     user_id = message.from_user.id
     try:
         data: dict = await service.get_data(user_id, state)
-        categories = data.get('categories')
+        categories: str = data.get('categories')
         if categories:
             builder = service.create_categories_list(categories)
             await message.answer(
@@ -79,13 +79,13 @@ async def process_buttons_press(callback: CallbackQuery,
         await service.update_state(objects, categories, state)
         if text == 'Все категории':
             await callback.message.edit_text(
-                text=f'Вы выбрали категорию <b>"{text}"</b>.\n\
-    Для дальнейшей работы выберите комаду /delete, /training, /list_all или /learn.',
+                text=f'Вы выбрали категорию <b>"{text.capitalize()}"</b>.\n\
+Для дальнейшей работы выберите комаду /delete, /training, /list_all или /learn.',
                 parse_mode='html')
         else:
             await callback.message.edit_text(
-                text=f'Вы выбрали категорию <b>"{text}"</b>.\n\
-    Для дальнейшей работы выберите комаду /add, /delete, /training, /list_all или /learn.',
+                text=f'Вы выбрали категорию <b>"{text.capitalize()}"</b>.\n\
+Для дальнейшей работы выберите комаду /add, /delete, /training, /list_all или /learn.',
                 parse_mode='html')
     except ServerErrorExeption as err:
         await callback.message.edit_text(text=err.msg)
