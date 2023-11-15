@@ -15,6 +15,7 @@ async def main() -> None:
 
     redis_storage.redis = Redis(host=settings.redis_host,
                                 port=settings.redis_port,
+                                db=settings.redis_db,
                                 encoding="utf-8",
                                 decode_responses=True)
     # Инициализируем бот и диспетчер

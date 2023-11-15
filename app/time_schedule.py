@@ -29,6 +29,7 @@ async def main():
     service: UserService = await get_user_service(db)
     async with Redis(host=settings.redis_host,
                      port=settings.redis_port,
+                     db=settings.redis_db,
                      encoding="utf-8",
                      decode_responses=True) as redis:
         users_id = await get_users_list(service)
