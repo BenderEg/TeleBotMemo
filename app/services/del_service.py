@@ -1,20 +1,8 @@
-from aiogram.fsm.context import FSMContext
 from aiogram.utils.keyboard import InlineKeyboardBuilder
-from sqlalchemy import delete
 
-from db.shemas import Object
 from services.base_service import BaseService
 
 class DeleteService(BaseService):
-
-    async def del_values_db(self, user_id: int, state: FSMContext) -> None:
-        res = await state.get_data()
-        data = res.get('deleted_objects')
-        if data:
-            stmt = delete(Object).where(Object.id.in_(data))
-            await self.db.execute(stmt)
-            await self.db.commit()
-        await state.update_data(deleted_objects=[])
 
     def create_delete_builder(
             self, objects: list) -> InlineKeyboardBuilder:

@@ -2,8 +2,9 @@ from csv import reader
 
 from sqlalchemy import insert
 
+from core.decorators import handle_db_errors
 from db.shemas import Object
-from models2.exeptions import CsvReadExeption
+from models.exeptions import CsvReadExeption
 from services.base_service import BaseService
 
 class CsvService(BaseService):
@@ -18,8 +19,9 @@ class CsvService(BaseService):
                         )
                 return res
             except:
-                raise CsvReadExeption()
+                raise CsvReadExeption
 
+    @handle_db_errors
     async def add_data_to_db(self, data: list,
                              user_id: int, category: str) -> None:
 

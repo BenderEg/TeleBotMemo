@@ -20,5 +20,7 @@ class Settings(BaseSettings):
     postgres_port: int
     echo: bool = True
     reset_frequency: int = 6
+    log_level: str
+    owner: int
 
 settings = Settings()

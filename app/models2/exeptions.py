@@ -1,3 +1,0 @@
-class CsvReadExeption(Exception):
-
-    pass

@@ -1,7 +1,8 @@
 from random import choice
 
 from aiogram.types import Message
-from sortedcontainers import SortedList
+from aiogram.utils.keyboard import InlineKeyboardBuilder
+from sortedcontainers import SortedList, SortedDict
 
 from services.base_service import BaseService
 
@@ -14,6 +15,7 @@ class LearningService(BaseService):
                 d[ele['category']] = SortedList([(ele['object'], ele['meaning'])])
             else:
                 d[ele['category']].add((ele['object'], ele['meaning']))
+        d = dict(sorted(d.items(), key=lambda x: x[0].lower()))
         return d
 
     def list_learning_pool(self, lst: list) -> str:
@@ -79,3 +81,11 @@ class LearningService(BaseService):
                 await message.answer(text=result,
                                      parse_mode='html')
                 i += j+1
+
+    def create_builder(self) -> InlineKeyboardBuilder:
+        builder = InlineKeyboardBuilder()
+        for i in range(0, 6):
+            builder.button(text=f"{i}", callback_data=f"{i}")
+        builder.button(text="End training", callback_data="/cancel")
+        builder.adjust(6, 1)
+        return builder

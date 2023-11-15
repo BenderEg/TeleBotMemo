@@ -6,7 +6,11 @@ from aiogram.types import Message
 from sqlalchemy.exc import IntegrityError
 
 from core.dependencies import category_service
-from models import FSMmodel, TextFilter
+from core.logger import logging
+from models.filters import TextFilter
+from models.exeptions import ServerErrorExeption
+from models.system import FSMmodel
+
 
 router: Router = Router()
 
@@ -30,7 +34,7 @@ async def process_exit_add_category_mode_command(message: Message,
 async def proces_other_commands_press(message: Message):
     await message.answer(
             text='Сначала выйдите из режима \
-создания категории выбрав команду /cancel)'
+создания категории выбрав команду /cancel.'
         )
 
 
@@ -44,24 +48,32 @@ async def process_add_category_in_progress_command(message: Message):
 
 @router.message(StateFilter(FSMmodel.add_category), TextFilter())
 async def process_new_category_command(message: Message,
+                                       text: str,
                                        state: FSMContext,
                                        service: category_service):
-    name = message.text
     user_id = message.from_user.id
-    if name == 'Все категории':
+    text = text.lower()
+    if text == 'все категории':
+        logging.warning(f"Категория '{text}' введена пользователем: {user_id}")
         await message.answer('Недопустимое имя. \
 Придумайте другое наименование категории. Для выхода из режима \
 создания категории нажмите /cancel')
     else:
         try:
-            await service.add_category(user_id, name)
-            await state.clear()
+            await service.add_category(user_id, text)
+            await state.update_data(category=text)
+            data = await service.get_data(user_id, state)
+            objects, categories = await service.update_db(user_id, data)
+            await service.update_state(objects, categories, state)
+            await state.set_state(state=None)
             await message.answer(f'Категория доступна в меню.\n\
 Вы вышли из режима создания категории.\n\
-Текущая категория <b>"{message.text}"</b>.', parse_mode='html')
-            await service.get_data(user_id, state)
-            await state.update_data(category=name)
-            await service.update_db(user_id, state)
-        except IntegrityError:
+Текущая категория <b>"{text}"</b>.', parse_mode='html')
+        except IntegrityError as err:
+            logging.error(f"Категория '{text}' уже существует у пользователя: {user_id}")
             await message.answer(text='Категория уже представлена в базе.\n\
-Введите другое именование. Для просмотра категорий выйдите из режима (/cancel) и нажмите /choose_category.')
+Введите другое именование. Для просмотра категорий выйдите из режима (/cancel) и нажмите /choose_category.\n\
+Если у вас нет категорий, нажмите /start, чтобы проверить наличие пользователя в системе.')
+        except ServerErrorExeption as err:
+            await message.answer(text=err.msg)
+            await state.clear()
