@@ -1,16 +1,16 @@
 services:
     db:
         container_name: db
-        image: bendereg/postgres_memo
+        image: postgres:latest
         env_file:
             - .env
         ports:
             - 5433:5432
         volumes:
-            - memo_db_new:/var/lib/postgresql/data
+            - memo_postgres:/var/lib/postgresql/data
             - ./db:/docker-entrypoint-initdb.d/
         networks:
-            - app
+            - memo_net
         healthcheck:
             test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
             interval: 5s
@@ -21,11 +21,11 @@ services:
         container_name: red
         image: redis
         volumes:
-            - test_red:/data
+            - memo_redis:/data
         ports:
             - 6379:6379
         networks:
-            - app
+            - memo_net
         healthcheck:
             test: ["CMD-SHELL", "redis-cli ping | grep PONG"]
             interval: 1s
@@ -33,11 +33,11 @@ services:
             retries: 5
 
 volumes:
-    memo_db_new:
-        name: memo_db_new
-    test_red:
-        name: test_red
+    memo_postgres:
+        name: memo_postgres
+    memo_redis:
+        name: memo_redis
 
 networks:
-    app:
-        name: app
+    memo_net:
+        name: memo_net

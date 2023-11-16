@@ -31,7 +31,7 @@ services:
         restart: always
 
     memo_main:
-        image: memo_main
+        build: .
         depends_on:
             - db
             - red

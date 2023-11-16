@@ -80,7 +80,7 @@ async def process_del_command(message: Message,
     user_id = message.from_user.id
     try:
         data: dict = await service.get_data(user_id, state)
-        filtered_objects = list(filter(lambda x: x['object'].find(
+        filtered_objects = list(filter(lambda x: x['object'].lower().find(
             text.lower()) != -1, data['objects']))
         if filtered_objects:
             del_builder = service.create_delete_builder(filtered_objects)
