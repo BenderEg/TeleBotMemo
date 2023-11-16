@@ -12,10 +12,14 @@ class LearningService(BaseService):
         d = {}
         for ele in lst:
             if ele['category'] not in d:
-                d[ele['category']] = SortedList([(ele['object'], ele['meaning'])])
+                d[ele['category']] = SortedList([(ele['object'].lower(),
+                                                  ele['meaning'].lower()
+                                                  )])
             else:
-                d[ele['category']].add((ele['object'], ele['meaning']))
-        d = dict(sorted(d.items(), key=lambda x: x[0].lower()))
+                d[ele['category']].add((ele['object'].lower(),
+                                        ele['meaning'].lower()
+                                        ))
+        d = dict(sorted(d.items(), key=lambda x: x[0]))
         return d
 
     def list_learning_pool(self, lst: list) -> str:

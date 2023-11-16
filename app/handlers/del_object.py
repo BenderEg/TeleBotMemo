@@ -90,8 +90,9 @@ async def process_del_command(message: Message,
 Нажмите /cancel для выхода из режима удаления.',
                 reply_markup=del_builder.as_markup())
         else:
+            category_name = data.get('category') if data.get('category') != None else 'Все категории'
             await message.answer(text=f"Объект отсутствует в базе \
-(категория '{data.get('category').capitalize()}').")
+(категория '{category_name.capitalize()}').")
     except ServerErrorExeption as err:
         await message.answer(text=err.msg)
         await state.clear()

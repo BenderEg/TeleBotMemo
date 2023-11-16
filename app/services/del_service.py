@@ -11,7 +11,8 @@ class DeleteService(BaseService):
             button_text = f"{ele['object']} = {ele['meaning']}"
             if len(button_text) > 30:
                 button_text = f'{button_text[:30]}...'
-            builder.button(text=button_text, callback_data=f"{ele['id']}")
+            builder.button(text=button_text,
+                           callback_data=f"{ele['id']}")
         builder.adjust(1)
         return builder
 

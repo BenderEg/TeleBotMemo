@@ -15,8 +15,7 @@ class CsvService(BaseService):
                 data = reader(f, delimiter='=')
                 cur = filter(lambda x: len(x) == 2, data)
                 res = list(
-                    map(lambda x: [self._strip_value(ele).capitalize() if ele == x[0]
-                                   else self._strip_value(ele) for ele in x], cur)
+                    map(lambda x: [self._strip_value(ele) for ele in x], cur)
                         )
                 return res
             except:
@@ -42,4 +41,4 @@ class CsvService(BaseService):
                             {ele[1]};" for i, ele in enumerate(lst, 1))
 
     def _strip_value(self, value: str):
-        return value.strip('\n .,;:!')
+        return value.strip('\n .,;:!').lower()
