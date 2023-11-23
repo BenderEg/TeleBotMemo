@@ -13,18 +13,26 @@ dsn = {
     'password': settings.postgres_password
 }
 
-@backoff.on_predicate(backoff.expo, lambda x: x != True,
-                      max_tries=7)
+def final_state(*args):
+    logging.error(f'Failed to check schema creation: {args[0]}')
+
+
+@backoff.on_exception(backoff.expo,
+                      exception=(asyncpg.exceptions.ConnectionFailureError,
+                                UnboundLocalError),
+                      max_tries=7,
+                      on_giveup=final_state)
 async def main():
     try:
         con: asyncpg.Connection = await asyncpg.connect(**dsn)
         result = await con.fetchval(
             "select exists \
                 (select * from pg_catalog.pg_namespace where nspname = $1)",
-            settings.schema)
+            settings.schema_db)
         return result
     except Exception as err:
         logging.error(f'Check schema creation error: {err}')
+        raise asyncpg.exceptions.ConnectionFailureError
     finally:
         await con.close()
 

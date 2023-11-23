@@ -1,3 +1,5 @@
+from sqlalchemy import exc
+
 class CsvReadExeption(Exception):
 
     def __init__(self, *args: object) -> None:
@@ -11,3 +13,11 @@ class ServerErrorExeption(Exception):
         self.msg = 'Произошла ошибка на стороне сервера.\n\
 Поддержка была уведомлена о проишедшей ошибке. Мы примем меры для ее устранения.\n\
 Несохраненные данные могут быть утеряны.'
+
+
+db_conn_exeptions = (exc.DatabaseError,
+                    exc.DisconnectionError,
+                    exc.InterfaceError,
+                    exc.DBAPIError,
+                    exc.InternalError,
+                    ConnectionRefusedError)

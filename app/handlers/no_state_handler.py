@@ -15,7 +15,7 @@ async def process_start_command(message: Message,
                                 service: user_service,
                                 state: FSMContext):
     id=message.from_user.id
-    name=message.from_user.username
+    name=message.from_user.first_name
     try:
         await service.start(id, name)
         msg = f'Привет, {name}.\n'

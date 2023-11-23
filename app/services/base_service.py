@@ -1,12 +1,15 @@
 from datetime import datetime, timedelta
 from typing import Optional
 
+import backoff
+
 from aiogram.fsm.context import FSMContext
 from sqlalchemy import select, label, update, Result, delete, insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.decorators import handle_db_errors
 from db.shemas import Object, User
+from models.exeptions import db_conn_exeptions
 
 class BaseService:
 
@@ -27,6 +30,9 @@ class BaseService:
             data: dict = await state.get_data()
         return data
 
+    @backoff.on_exception(backoff.expo,
+                          exception=db_conn_exeptions,
+                          max_tries=5)
     async def get_data_db(self, user_id: int) -> Optional[dict]:
         stmt = self._get_select_statement(user_id)
         result = await self.db.execute(stmt)
@@ -93,6 +99,9 @@ class BaseService:
             ele['id'] = str(ele['id'])
         return data
 
+    @backoff.on_exception(backoff.expo,
+                          exception=db_conn_exeptions,
+                          max_tries=5)
     async def update_training_data(self, data: list) -> None:
         stmt = []
         for ele in data:
@@ -120,11 +129,17 @@ class BaseService:
                     })
         await self.db.execute(update(Object), stmt)
 
+    @backoff.on_exception(backoff.expo,
+                          exception=db_conn_exeptions,
+                          max_tries=5)
     async def del_values_db(self, data: list) -> None:
         if data:
             stmt = delete(Object).where(Object.id.in_(data))
             await self.db.execute(stmt)
 
+    @backoff.on_exception(backoff.expo,
+                          exception=db_conn_exeptions,
+                          max_tries=5)
     async def add_values_db(self, user_id: int, data: list) -> None:
         stmt = [{'user_id': user_id,
                  'object': ele['object'],
@@ -132,6 +147,9 @@ class BaseService:
                  'category': ele['category']} for ele in data]
         await self.db.execute(insert(Object), stmt)
 
+    @backoff.on_exception(backoff.expo,
+                          exception=db_conn_exeptions,
+                          max_tries=5)
     async def get_user_categories(self, user_id: int) -> list:
         user = await self.db.get(User, user_id)
         if user and user.categories:

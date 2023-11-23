@@ -1,7 +1,6 @@
 from typing import Callable
 
 from sqlalchemy.exc import IntegrityError
-from redis.exceptions import ConnectionError
 
 from core import bot
 from core.config import settings

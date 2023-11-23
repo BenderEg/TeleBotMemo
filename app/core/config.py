@@ -22,6 +22,6 @@ class Settings(BaseSettings):
     reset_frequency: int = 6
     log_level: str
     owner: int
-    schema: str
+    schema_db: str
 
 settings = Settings()

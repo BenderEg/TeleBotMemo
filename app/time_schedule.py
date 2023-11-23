@@ -1,5 +1,3 @@
-import asyncio
-
 from json import loads
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
@@ -44,8 +42,3 @@ async def main():
 
 
 scheduler.add_job(main, "interval", hours=settings.reset_frequency)
-
-'''
-if __name__ == '__main__':
-    asyncio.run(main())
-'''

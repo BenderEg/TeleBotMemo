@@ -1,10 +1,12 @@
 from csv import reader
 
+import backoff
+
 from sqlalchemy import insert
 
 from core.decorators import handle_db_errors
 from db.shemas import Object
-from models.exeptions import CsvReadExeption
+from models.exeptions import CsvReadExeption, db_conn_exeptions
 from services.base_service import BaseService
 
 class CsvService(BaseService):
@@ -22,6 +24,9 @@ class CsvService(BaseService):
                 raise CsvReadExeption
 
     @handle_db_errors
+    @backoff.on_exception(backoff.expo,
+                          exception=db_conn_exeptions,
+                          max_tries=5)
     async def add_data_to_db(self, data: list,
                              user_id: int, category: str) -> None:
 
