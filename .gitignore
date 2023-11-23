@@ -12,3 +12,5 @@ test.*
 poetry*
 pyproject.toml
 .gitignore
+for*
+etl

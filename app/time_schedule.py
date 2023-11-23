@@ -12,7 +12,8 @@ def get_users_list():
 
     with DbConnect() as db:
 
-        db.cur.execute('SELECT id FROM users')
+        db.cur.execute('SELECT id \
+                       FROM users')
         while True:
             result = db.cur.fetchmany(100)
             if result:

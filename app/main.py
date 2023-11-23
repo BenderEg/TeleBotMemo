@@ -3,7 +3,7 @@ from aiogram import Bot, Dispatcher
 
 from congif import set_main_menu
 from handlers import no_state_handler, training, add_object, \
-    learn, del_object, final_state
+    learn, del_object, final_state, add_category, choose_category
 from models import BOT_TOKEN, storage
 from time_schedule import scheduler
 
@@ -16,6 +16,8 @@ async def main() -> None:
 
     # Регистриуем роутеры в диспетчере
     dp.include_router(no_state_handler.router)
+    dp.include_router(add_category.router)
+    dp.include_router(choose_category.router)
     dp.include_router(learn.router)
     dp.include_router(training.router)
     dp.include_router(add_object.router)

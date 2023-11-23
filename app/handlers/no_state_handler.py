@@ -12,9 +12,12 @@ router: Router = Router()
 @router.message(CommandStart())
 async def process_start_command(message: Message):
     with DbConnect() as db:
-        db.cur.execute('INSERT INTO users (id) \
-                       VALUES (%s) ON CONFLICT (id) DO NOTHING', (
-            message.from_user.id,))
+        db.cur.execute('INSERT INTO users (id, name) \
+                       VALUES (%s, %s) \
+                       ON CONFLICT (id) \
+                       DO NOTHING', (
+            message.from_user.id,
+            message.from_user.first_name))
     await message.answer(text=LEXICON_RU['/start'])
 
 

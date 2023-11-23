@@ -35,6 +35,12 @@ class Response(BaseFilter):
         return callback.data in ["0", "1", "2", "3", "4", "5"]
 
 
+class CategoryResponse(BaseFilter):
+
+    async def __call__(self, callback: CallbackQuery) -> bool:
+        return int(callback.data) >= 0
+
+
 class DigitResponse(BaseFilter):
 
     async def __call__(self, callback: CallbackQuery) -> bool:
@@ -68,6 +74,8 @@ class FSMmodel(StatesGroup):
     training = State()        # Состояние тренировки
     add = State()  # Состояние добавления объектов
     delete = State()  # Состояние удаления объектов
+    add_category = State()
+    choose_category = State()
 
 
 class Con:

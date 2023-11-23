@@ -22,3 +22,4 @@ six==1.16.0
 typing_extensions==4.7.1
 tzlocal==5.0.1
 yarl==1.9.2
+sortedcontainers==2.4.0
