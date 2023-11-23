@@ -4,6 +4,8 @@ services:
         image: postgres:latest
         env_file:
             - .env
+        ports:
+            - 5433:5432
         volumes:
             - memo_postgres:/var/lib/postgresql/data
             - ./db:/docker-entrypoint-initdb.d/
@@ -14,13 +16,14 @@ services:
             interval: 5s
             timeout: 5s
             retries: 5
-        restart: always
 
     red:
         container_name: red
         image: redis
         volumes:
             - memo_redis:/data
+        ports:
+            - 6379:6379
         networks:
             - memo_net
         healthcheck:
@@ -28,18 +31,6 @@ services:
             interval: 1s
             timeout: 3s
             retries: 5
-        restart: always
-
-    memo_main:
-        build: .
-        depends_on:
-            - db
-            - red
-        env_file:
-            - .env
-        networks:
-            - memo_net
-        restart: always
 
 volumes:
     memo_postgres:
