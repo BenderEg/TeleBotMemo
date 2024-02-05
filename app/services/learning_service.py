@@ -2,7 +2,7 @@ from random import choice
 
 from aiogram.types import Message
 from aiogram.utils.keyboard import InlineKeyboardBuilder
-from sortedcontainers import SortedList, SortedDict
+from sortedcontainers import SortedList
 
 from db.postgres import db_session
 from services.base_service import BaseService
@@ -94,7 +94,6 @@ class LearningService(BaseService):
         builder.button(text="End training", callback_data="/cancel")
         builder.adjust(6, 1)
         return builder
-
 
 
 async def get_learning_service(db: db_session) -> LearningService:

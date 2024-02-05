@@ -1,5 +1,15 @@
 This bot helps to remember things.
 
+Technology stack:
+
+1. Python;
+2. Aiogram3;
+3. SQLAlchemy+Alembic;
+4. Redis;
+5. Pydantic;
+6. Postgresql;
+7. Docker.
+
 I've used aiogram for main code creation.
 User's sets are stored in Postresql database.
 For limiting database access user's set is temporary stored in cash as well as user's state.
@@ -12,3 +22,9 @@ Learn mode may be useful for freshly added objects or for objects which failed t
 For all objects look up enter list_all command.
 
 P.S.: by now mobile version doesn't work properly with spoilers, that is why training mode is better to use on desktop version.
+
+
+To launch application:
+
+1. Create .env file and add values according to .env.example
+2. in terminal enter docker compose up -d.
