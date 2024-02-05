@@ -1,3 +1,4 @@
+from functools import wraps
 from typing import Callable
 
 from sqlalchemy.exc import IntegrityError
@@ -8,6 +9,7 @@ from core.logger import logging
 from models.exeptions import ServerErrorExeption
 
 def handle_db_errors(func: Callable) -> Callable:
+    @wraps(func)
     async def wrapper(*args, **kwargs):
         try:
             result = await func(*args, **kwargs)

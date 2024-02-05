@@ -25,5 +25,3 @@ class Settings(BaseSettings):
     schema_db: str
 
 settings = Settings()
-
-print(settings.token)
