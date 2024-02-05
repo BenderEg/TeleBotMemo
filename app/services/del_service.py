@@ -1,5 +1,6 @@
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
+from db.postgres import db_session
 from services.base_service import BaseService
 
 class DeleteService(BaseService):
@@ -25,3 +26,7 @@ class DeleteService(BaseService):
             else:
                 filtered_objects.append(ele)
         return target_object, filtered_objects
+
+
+async def get_delete_service(db: db_session) -> DeleteService:
+    return DeleteService(db)

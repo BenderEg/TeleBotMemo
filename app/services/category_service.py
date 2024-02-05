@@ -3,6 +3,7 @@ import backoff
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 from core.decorators import handle_db_errors
+from db.postgres import db_session
 from db.shemas import Category
 from models.exeptions import db_conn_exeptions
 from services.base_service import BaseService
@@ -27,3 +28,7 @@ class CategoryService(BaseService):
                        callback_data='Все категории')
         builder.adjust(3, 1)
         return builder
+
+
+async def get_category_service(db: db_session) -> CategoryService:
+    return CategoryService(db)

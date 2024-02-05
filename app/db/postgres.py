@@ -1,3 +1,6 @@
+from typing import Annotated
+
+from aiogram3_di import Depends
 from sqlalchemy import MetaData
 from sqlalchemy.orm import declarative_base, sessionmaker
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
@@ -18,3 +21,6 @@ async_session = sessionmaker(engine, class_=AsyncSession,
 async def get_session() -> AsyncSession:
     async with async_session() as session:
         yield session
+
+
+db_session = Annotated[AsyncSession, Depends(get_session)]

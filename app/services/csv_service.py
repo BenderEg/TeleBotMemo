@@ -5,6 +5,7 @@ import backoff
 from sqlalchemy import insert
 
 from core.decorators import handle_db_errors
+from db.postgres import db_session
 from db.shemas import Object
 from models.exeptions import CsvReadExeption, db_conn_exeptions
 from services.base_service import BaseService
@@ -47,3 +48,7 @@ class CsvService(BaseService):
 
     def _strip_value(self, value: str):
         return value.strip('\n .,;:!').lower()
+
+
+async def get_csv_service(db: db_session) -> CsvService:
+    return CsvService(db)

@@ -5,6 +5,7 @@ from services.base_service import BaseService
 
 from core.decorators import handle_db_errors
 from core.logger import logging
+from db.postgres import db_session
 from models.exeptions import db_conn_exeptions
 
 class UserService(BaseService):
@@ -22,3 +23,7 @@ class UserService(BaseService):
             user = User(id=id, name=name)
             self.db.add(user)
         await self.db.commit()
+
+
+async def get_user_service(db: db_session) -> UserService:
+    return UserService(db)
